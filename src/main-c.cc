@@ -58,7 +58,7 @@ void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::st
       while (pch != NULL)
       {
 	FILE * fx;
-	char filename[] = "/var/spool/sms/GSM/GSM1/smstools.XXXXXX"; // template for our file.        
+	char filename[] = "/var/spool/sms/outgoing/smstools.XXXXXX"; // template for our file.        
 	int fd = mkstemp(filename);    // Creates and opens a new temp file r/w.
         if (fd == -1){
 	   printf("Error make TMP-Filename\n");
