@@ -27,7 +27,7 @@ CXXFLAGS3 := -Wall -Wextra -pedantic \
         -Wno-variadic-macros \
         -DVERSION="\"$(VERSION3)\""
         
-.PHONY: all smstools3 debug-smstools3 smstools3-gtk debug-smstools3-gtk getsms debug-getsms install uninstall clean version
+.PHONY: all smstools3 debug-smstools3 smstools3-gtk debug-smstools3-gtk debug-W32smstools W32smstools Debüt-W32smstools-gtk W32smstools-gtk debug-W32getsms W32getsms getsms debug-getsms install uninstall clean version
 
 all: smstools3 smstools3-gtk getsms 
 smstools3: main-c.cc	
