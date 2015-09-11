@@ -9,7 +9,7 @@ read input
 if [[ $input == "Y" || $input == "y" ]]; then
         echo "doing that ..."
         cd src/
-        sh W32_x64_opensuse_build.sh
+        sh W32_x64_buildos.sh
         cd ../
 else
         echo "don't doing that ..."
