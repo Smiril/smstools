@@ -41,7 +41,7 @@ void iam()
 	  printf("`------'`------'`------'`------'`------'`------'\n");
 }
 
-void sendsms(std::string a1,std::string b1,std::string dx,std::string dd)
+void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::string dc)
 {     
       const char *pch;
       int value = 0;
@@ -83,19 +83,41 @@ void sendsms(std::string a1,std::string b1,std::string dx,std::string dd)
       // God's will welcome but User vote and got some Sympathy with the Devil ...
       std::string god = "y";
       std::string devil = "y";
-      if(dx.c_str() == god && dd.c_str() != devil)
+      std::string human = "y";
+      if(dx.c_str() == god && dd.c_str() != devil && dc.c_str() != human)
       {
       fprintf ( fx, "Flash: %s \n", "yes" ); // <<< write:Flash:yes
       printf("\x1B[32mSending as \x1B[33mFlash\x1B[32m SMS with \x1B[33mLow Priority!\x1B[39m\n");
       }
-      else if(dx.c_str() == god && dd.c_str() == devil){
+      if(dx.c_str() == god && dd.c_str() != devil && dc.c_str() == human)
+      {
+      fprintf ( fx, "Flash: %s \n", "yes" ); // <<< write:Flash:yes
+      fprintf ( fx, "Report: %s \n", "yes" );
+      printf("\x1B[32mSending as \x1B[33mFlash\x1B[32m SMS with \x1B[33mLow Priority!\x1B[39m\n");
+      }
+      else if(dx.c_str() == god && dd.c_str() == devil && dc.c_str() != human){
       fprintf ( fx, "Priority: %s \n", "yes" );
       fprintf ( fx, "Flash: %s \n", "yes" );// <<< write:Flash:yesPriority:yes
       printf("\x1B[32mSending as \x1B[33mFlash\x1B[32m SMS with \x1B[33mHigh Priority!\x1B[39m\n");
       }
-      else if(dx.c_str() != god && dd.c_str() == devil){
+      else if(dx.c_str() == god && dd.c_str() == devil && dc.c_str() == human){
+      fprintf ( fx, "Priority: %s \n", "yes" );
+      fprintf ( fx, "Flash: %s \n", "yes" );// <<< write:Flash:yesPriority:yes
+      fprintf ( fx, "Report: %s \n", "yes" );
+      printf("\x1B[32mSending as \x1B[33mFlash\x1B[32m SMS with \x1B[33mHigh Priority!\x1B[39m and getting Report\n");
+      }
+      else if(dx.c_str() != god && dd.c_str() == devil && dc.c_str() == human){
+      fprintf ( fx, "Priority: %s \n", "yes" );// <<< write:Priority:yes
+      fprintf ( fx, "Report: %s \n", "yes" );
+      printf("\x1B[32mSending as \x1B[33mRegular\x1B[32m SMS with \x1B[33mHigh Priority!\x1B[39m and getting Report\n");
+      }
+      else if(dx.c_str() != god && dd.c_str() == devil && dc.c_str() != human){
       fprintf ( fx, "Priority: %s \n", "yes" );// <<< write:Priority:yes
       printf("\x1B[32mSending as \x1B[33mRegular\x1B[32m SMS with \x1B[33mHigh Priority!\x1B[39m\n");
+      }
+      else if(dx.c_str() != god && dd.c_str() != devil && dc.c_str() == human){
+      fprintf ( fx, "Report: %s \n", "yes" );// <<< write:Priority:yes
+      printf("\x1B[32mSending as \x1B[33mRegular\x1B[32m SMS with \x1B[33mLow Priority!\x1B[39m and getting Report\n");
       }
       else{
       printf("\x1B[32mSending as \x1B[33mRegular\x1B[32m SMS with \x1B[33mLow Priority!\x1B[39m\n");
@@ -129,12 +151,12 @@ int main(/*int argc, char *argv[]*/) {
 	//sleep(1);
 	printf(" \x1B[32mFinished\x1B[39m\n");
 	// Uncomment version you want!
-  // v.1.4
 	Again:
 	std::string a = "";
 	std::string b = "";
 	std::string e = "n";
 	std::string f = "n";
+	std::string g = "n";
 	std::string h = "n";
 	std::string hh = "y";
 	
@@ -153,8 +175,10 @@ int main(/*int argc, char *argv[]*/) {
 	getline(cin,e);
 	printf("\x1B[32mSend as Priority SMS? (y/n) Default n : \x1B[39m");
 	getline(cin,f);
+	printf("\x1B[32mGet Report SMS? (y/n) Default n : \x1B[39m");
+	getline(cin,g);
 	
-	sendsms(a,b,e,f);
+	sendsms(a,b,e,f,g);
 	
 	printf("\x1B[32mSend again SMS? (y/n) Default n : \x1B[39m");
 	getline(cin,h);
