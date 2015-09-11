@@ -31,20 +31,35 @@ CXXFLAGS3 := -Wall -Wextra -pedantic \
 
 all: smstools3 smstools3-gtk getsms 
 smstools3: main-c.cc	
-	$(CXX) main-c.cc -I SDK/include $(CXXFLAGS1) -o smstools 
+$(CXX) main-c.cc $(CXXFLAGS1) -o smstools 
 debug-smstools3: CXXFLAGS1 += -g -DDEBUG
 debug-smstools3: main-c.cc
 	$(CXX) $(CXXFLAGS1) main-c.cc -o debug-smstools smstools
+W32smstools: main-c.cc	
+$(CXX) main-c.cc $(CXXFLAGS1) -m32 -o smstools.exe
+debug-W32smstools: CXXFLAGS1 += -g -DDEBUG
+debug-W32smstools: main-c.cc
+	$(CXX) $(CXXFLAGS1) main-c.cc -m32 -o debug-smstools.exe smstools.exe
 smstools3-gtk: main-gtk.cc	
 	$(CXX) main-gtk.cc $(CXXFLAGS2) -o smstools-gtk $(LIBS)
 debug-smstools3-gtk: CXXFLAGS2 += -g -DDEBUG
 debug-smstools3-gtk: main-gtk.cc
 	$(CXX) $(CXXFLAGS2) main-gtk.cc -o debug-smstools-gtk smstools-gtk $(LIBS) 
+W32smstools-gtk: main-gtk.cc
+        $(CXX) $(CXXFLAGS2) main-gtk.cc -m32 -o W32smstools-gtk $(LIBS)
+debug-W32smstools-gtk: CXXFLAGS1 += -g -DDEBUG
+debug-W32smstools-gtk: main-gtk.cc
+	$(CXX) $(CXXFLAGS1) main-c.cc -m32 -o debug-smstools.exe smstools.exe
 getsms: main.cc
 	$(CXX) main.cc $(CXXFLAGS3) -o getsms
 debug-getsms: CXXFLAGS3 += -g -DDEBUG
 debug-getsms: main.cc
 	$(CXX) $(CXXFLAGS3) main.cc -o debug-getsms getsms 
+W32getsms: main.cc
+	$(CXX) main.cc $(CXXFLAGS3) -m32 -o getsms.exe
+debug-W32getsms: CXXFLAGS3 += -g -DDEBUG
+debug-W32getsms: main.cc
+	$(CXX) $(CXXFLAGS3) main.cc -m32 -o debug-getsms.exe getsms.exe
 version:
 	@echo $(VERSION3)
 	@echo $(VERSION2)
@@ -70,3 +85,9 @@ clean:
 	rm -rf debug-smstools	
 	rm -rf debug-smstools-gtk
 	rm -rf debug-getsms
+	rm -rf W32smstools-gtk.exe
+	rm -rf W32smstools.exe
+	rm -rf W32getsms.exe
+	rm -rf debug-W32smstools.exe	
+	rm -rf debug-W32smstools-gtk.exe
+	rm -rf debug-W32getsms.exe
