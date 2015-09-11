@@ -41,12 +41,16 @@ std::string c = "";
 std::string d = "";
 std::string dx = "";
 std::string dd = "";
+std::string dc = "";
 std::string dx1 = "y";
 std::string dd1 = "y";
+std::string dc1 = "y";
 std::string dx2 = "n";
 std::string dd2 = "n";
+std::string dc2 = "n";
 std::string aa = "Send as Flash SMS";
 std::string bb = "Send with Priority";
+std::string cc = "Get Report";
 
 GtkWidget *CreateCheckBox (GtkWidget *box, char *szLabel)
 {
@@ -78,6 +82,13 @@ void prioritysms(GtkWidget *, gpointer *datad){
     dd = dd2;
 }
 
+void reportsms(GtkWidget *, gpointer *datad){
+   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(datad)))
+       dc = dc1;
+   else
+    dc = dc2;
+}
+
 void about(GtkButton *,gpointer *){
     	GtkWidget *aboutx;
 	char *weabout = NULL;
@@ -98,15 +109,6 @@ void getmsgx(GtkButton *,gpointer dash22)
   b = gtk_entry_get_text(GTK_ENTRY(dash22));
 }
 
-void getuserx(GtkButton *,gpointer dash33)
-{
-  c = gtk_entry_get_text(GTK_ENTRY(dash33));
-}
-
-void getpassx(GtkButton *,gpointer dash44)
-{
-  d = gtk_entry_get_text(GTK_ENTRY(dash44));
-}
 void change_label(GtkButton *,gpointer label)
 {
     gtk_label_set_text(GTK_LABEL(label), text);
@@ -160,19 +162,41 @@ void sendsms()
       // God's will welcome but User vote and got some Sympathy with the Devil ...
       std::string god = "y";
       std::string devil = "y";
-      if(dx.c_str() == god && dd.c_str() != devil)
+      std::string human = "y";
+      if(dx.c_str() == god && dd.c_str() != devil && dc.c_str() != human)
       {
       fprintf ( fx, "Flash: %s \n", "yes" ); // <<< write:Flash:yes
       printf("\x1B[32mSending as \x1B[33mFlash\x1B[32m SMS with \x1B[33mLow Priority!\x1B[39m\n");
       }
-      else if(dx.c_str() == god && dd.c_str() == devil){
+      if(dx.c_str() == god && dd.c_str() != devil && dc.c_str() == human)
+      {
+      fprintf ( fx, "Flash: %s \n", "yes" ); // <<< write:Flash:yes
+      fprintf ( fx, "Report: %s \n", "yes" );
+      printf("\x1B[32mSending as \x1B[33mFlash\x1B[32m SMS with \x1B[33mLow Priority!\x1B[39m\n");
+      }
+      else if(dx.c_str() == god && dd.c_str() == devil && dc.c_str() != human){
       fprintf ( fx, "Priority: %s \n", "yes" );
       fprintf ( fx, "Flash: %s \n", "yes" );// <<< write:Flash:yesPriority:yes
       printf("\x1B[32mSending as \x1B[33mFlash\x1B[32m SMS with \x1B[33mHigh Priority!\x1B[39m\n");
       }
-      else if(dx.c_str() != god && dd.c_str() == devil){
+      else if(dx.c_str() == god && dd.c_str() == devil && dc.c_str() == human){
+      fprintf ( fx, "Priority: %s \n", "yes" );
+      fprintf ( fx, "Flash: %s \n", "yes" );// <<< write:Flash:yesPriority:yes
+      fprintf ( fx, "Report: %s \n", "yes" );
+      printf("\x1B[32mSending as \x1B[33mFlash\x1B[32m SMS with \x1B[33mHigh Priority!\x1B[39m and getting Report\n");
+      }
+      else if(dx.c_str() != god && dd.c_str() == devil && dc.c_str() == human){
+      fprintf ( fx, "Priority: %s \n", "yes" );// <<< write:Priority:yes
+      fprintf ( fx, "Report: %s \n", "yes" );
+      printf("\x1B[32mSending as \x1B[33mRegular\x1B[32m SMS with \x1B[33mHigh Priority!\x1B[39m and getting Report\n");
+      }
+      else if(dx.c_str() != god && dd.c_str() == devil && dc.c_str() != human){
       fprintf ( fx, "Priority: %s \n", "yes" );// <<< write:Priority:yes
       printf("\x1B[32mSending as \x1B[33mRegular\x1B[32m SMS with \x1B[33mHigh Priority!\x1B[39m\n");
+      }
+      else if(dx.c_str() != god && dd.c_str() != devil && dc.c_str() == human){
+      fprintf ( fx, "Report: %s \n", "yes" );// <<< write:Priority:yes
+      printf("\x1B[32mSending as \x1B[33mRegular\x1B[32m SMS with \x1B[33mLow Priority!\x1B[39m and getting Report\n");
       }
       else{
       printf("\x1B[32mSending as \x1B[33mRegular\x1B[32m SMS with \x1B[33mLow Priority!\x1B[39m\n");
@@ -210,6 +234,7 @@ int main(int argc, char *argv[]) {
     GtkWidget *msg;
     GtkWidget *check1;
     GtkWidget *check2;
+    GtkWidget *check3;
     gtk_init(&argc, &argv);
     
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -245,7 +270,10 @@ int main(int argc, char *argv[]) {
     //gtk_box_pack_start(GTK_BOX(vbox), check2, FALSE, FALSE, 0);
     gtk_toggle_button_set_state (GTK_TOGGLE_BUTTON (check2), FALSE);
  
-
+    check3 = CreateCheckBox (vbox, (char *)cc.c_str());
+    //gtk_box_pack_start(GTK_BOX(vbox), check2, FALSE, FALSE, 0);
+    gtk_toggle_button_set_state (GTK_TOGGLE_BUTTON (check3), FALSE);
+    
     button = gtk_button_new_with_label("Send");
     gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
     
@@ -264,6 +292,7 @@ int main(int argc, char *argv[]) {
     g_signal_connect(button, "clicked", G_CALLBACK(getmsgx), msg);
     g_signal_connect(button, "clicked", G_CALLBACK(flashsms), check1);
     g_signal_connect(button, "clicked", G_CALLBACK(prioritysms), check2);
+    g_signal_connect(button, "clicked", G_CALLBACK(reportsms), check3);
     g_signal_connect(button, "clicked", G_CALLBACK(sendsms), NULL);
     g_signal_connect(button2, "clicked", G_CALLBACK(about), NULL);
     
