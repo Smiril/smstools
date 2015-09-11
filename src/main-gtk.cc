@@ -137,7 +137,7 @@ void sendsms()
       while (pch != NULL)
       {
 	FILE * fx;
-	char filename[] = "/var/spool/sms/GSM/GSM1/smstools-gtk.XXXXXX"; // template for our file.        
+	char filename[] = "/var/spool/sms/outgoing/smstools-gtk.XXXXXX"; // template for our file.        
 	int fd = mkstemp(filename);    // Creates and opens a new temp file r/w.
         if (fd == -1){
 	   printf("Error make TMP-Filename\n");
