@@ -224,7 +224,6 @@ void sendsms()
 }
 
 int main(int argc, char *argv[]) {
-    //freopen( "/var/log/Smiril-websms-error.log", "a+", stderr );
     
     GtkWidget *window;
     GtkWidget *vbox;
