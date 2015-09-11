@@ -139,8 +139,8 @@ void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::st
 }
 	
 
-int main(/*int argc, char *argv[]*/) {
-	freopen( "/var/log/Smiril-websms-error.log", "a+", stderr );
+int main(){
+
 	printf("%s \n",Versionx());
 	int x = 0;  // Don't forget to declare variables
 	printf("\x1B[33mLoading...");
