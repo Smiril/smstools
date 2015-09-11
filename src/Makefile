@@ -1,0 +1,72 @@
+NAME := Smiril-smstools
+MAJOR3 := 0
+MINOR3 := 1
+MAJOR2 := 0
+MINOR2 := 3
+MAJOR1 := 0
+MINOR1 := 3
+CODENAME1 := \x1B[32mT.E.D.\x1B[39m - \x1B[33mThe Enemy Dail\x1B[39m
+CODENAME2 := T.E.D. - The Enemy Dail
+CODENAME3 := \x1B[32mT.E.D.\x1B[39m - \x1B[33mThe Enemy Dail\x1B[39m
+LIBNAME := $(NAME)
+VERSION1 := $(LIBNAME) $(MAJOR1).$(MINOR1) $(CODENAME1)
+VERSION2 := $(LIBNAME) $(MAJOR2).$(MINOR2) $(CODENAME2)
+VERSION3 := $(LIBNAME) $(MAJOR3).$(MINOR3) $(CODENAME3)
+LIBS := `pkg-config gtk+-2.0 --cflags --libs`
+PREFIX := /bin
+CXX := g++
+CX1 := i686-w64-mingw32-g++
+CX2 := i686-darwin-mingw32-g++
+CXXFLAGS1 := -Wall -Wextra -pedantic \
+        -Wno-variadic-macros \
+        -DVERSION="\"$(VERSION1)\""
+CXXFLAGS2 := -Wall -Wextra -pedantic \
+        -Wno-variadic-macros \
+        -DVERSION="\"$(VERSION2)\""
+CXXFLAGS3 := -Wall -Wextra -pedantic \
+        -Wno-variadic-macros \
+        -DVERSION="\"$(VERSION3)\""
+        
+.PHONY: all smstools3 debug-smstools3 smstools3-gtk debug-smstools3-gtk getsms debug-getsms install uninstall clean version
+
+all: smstools3 smstools3-gtk getsms 
+smstools3: main-c.cc	
+	$(CXX) main-c.cc -I SDK/include $(CXXFLAGS1) -o smstools 
+debug-smstools3: CXXFLAGS1 += -g -DDEBUG
+debug-smstools3: main-c.cc
+	$(CXX) $(CXXFLAGS1) main-c.cc -o debug-smstools smstools
+smstools3-gtk: main-gtk.cc	
+	$(CXX) main-gtk.cc $(CXXFLAGS2) -o smstools-gtk $(LIBS)
+debug-smstools3-gtk: CXXFLAGS2 += -g -DDEBUG
+debug-smstools3-gtk: main-gtk.cc
+	$(CXX) $(CXXFLAGS2) main-gtk.cc -o debug-smstools-gtk smstools-gtk $(LIBS) 
+getsms: main.cc
+	$(CXX) main.cc $(CXXFLAGS3) -o getsms
+debug-getsms: CXXFLAGS3 += -g -DDEBUG
+debug-getsms: main.cc
+	$(CXX) $(CXXFLAGS3) main.cc -o debug-getsms getsms 
+version:
+	@echo $(VERSION3)
+	@echo $(VERSION2)
+	@echo $(VERSION1)
+
+install: getsms smstools3
+	mkdir -p $(PREFIX)
+	cp smstools $(PREFIX)
+	chmod +x $(PREFIX)/smstools
+	cp smstools-gtk $(PREFIX)
+	chmod +x $(PREFIX)/smstools-gtk
+	cp getsms $(PREFIX)
+	chmod +x $(PREFIX)/getsms
+
+uninstall: 
+	rm -rf $(PREFIX)/smstools-gtk
+	rm -rf $(PREFIX)/smstools
+	rm -rf $(PREFIX)/getsms
+clean: 
+	rm -rf smstools-gtk
+	rm -rf smstools
+	rm -rf getsms
+	rm -rf debug-smstools	
+	rm -rf debug-smstools-gtk
+	rm -rf debug-getsms
