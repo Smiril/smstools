@@ -31,7 +31,7 @@ CXXFLAGS3 := -Wall -Wextra -pedantic \
 
 all: smstools3 smstools3-gtk getsms 
 smstools3: main-c.cc	
-$(CXX) main-c.cc $(CXXFLAGS1) -o smstools 
+	$(CXX) main-c.cc $(CXXFLAGS1) -o smstools 
 debug-smstools3: CXXFLAGS1 += -g -DDEBUG
 debug-smstools3: main-c.cc
 	$(CXX) $(CXXFLAGS1) main-c.cc -o debug-smstools smstools
