@@ -80,7 +80,7 @@ version:
 	@echo $(VERSION2)
 	@echo $(VERSION1)
 
-install: getsms smstools3
+install: getsms smstools3 smstools3-gtk
 	mkdir -p $(PREFIX)
 	cp smstools $(PREFIX)
 	chmod +x $(PREFIX)/smstools
