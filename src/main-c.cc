@@ -58,17 +58,21 @@ void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::st
       while (pch != NULL)
       {
 	FILE * fx;
-	char filename[] = "/var/spool/sms/outgoing/smstools.XXXXXX"; // template for our file.        
+	char filename[] = "/var/spool/sms/GSM/GSM1/smstools.XXXXXX"; // template for our file.        
 	int fd = mkstemp(filename);    // Creates and opens a new temp file r/w.
         if (fd == -1){
-	   printf("Error make TMP-Filename\n");
-	   exit(1);
+	char *wexx0 = NULL;
+	wexx0 = g_strdup_printf("Message: %s \nTo Number: %lu \nStatus message: %s\nStatus code: %d\n",b.c_str(),strtol(pch,NULL,value),"Error make TMP-Filename",4010);
+	fprintf(stderr,"%s \n",wexx0);
+	exit(1);
 	}          // Check we managed to open the file.
 	close(fd);
 	fx = fopen (filename,"w+");                        // Xs are replaced with a unique number.
         if (fx == NULL){
-	   printf("Error write to Filename\n");
-	   exit(1);
+	char *wexx1 = NULL;
+	wexx1 = g_strdup_printf("Message: %s \nTo Number: %lu \nStatus message: %s\nStatus code: %d\n",b.c_str(),strtol(pch,NULL,value),"Error could not Write",4030);
+	fprintf(stderr,"%s \n",wexx1);
+	exit(1);
 	}          // Check we managed to open the file.
         #ifdef __linux__
 	fprintf ( fx, "To: %lu \n", strtol(pch,NULL,value) );// <<< write to:
@@ -127,9 +131,13 @@ void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::st
          fprintf ( fx, "\n%s \n", b1.c_str() );// <<< write:Message
          // Max. sms per message just Message count
 	    
-	    fclose(fx);
+	    if(fclose(fx)){
   //unlink(filename);
-	 // Test message
+	 // Test message?
+	char *wexx = NULL;
+	wexx = g_strdup_printf("Message: %s \nTo Number: %lu \nStatus message: %s\nStatus code: %d\n",b.c_str(),strtol(pch,NULL,value),"Message OK",2000);
+	fprintf(stderr,"%s \n",wexx);
+	}
     
 	pch = strtok (NULL, ",");
 	
@@ -139,8 +147,8 @@ void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::st
 }
 	
 
-int main(){
-
+int main(/*int argc, char *argv[]*/) {
+	freopen( "/var/log/Smiril-websms-error.log", "a+", stderr );
 	printf("%s \n",Versionx());
 	int x = 0;  // Don't forget to declare variables
 	printf("\x1B[33mLoading...");
