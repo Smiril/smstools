@@ -182,7 +182,7 @@ void sendsms()
       fprintf ( fx, "Flash: %s \n", "yes" ); // <<< write:Flash:yes
       printf("\x1B[32mSending as \x1B[33mFlash\x1B[32m SMS with \x1B[33mLow Priority!\x1B[39m\n");
       }
-      if(dx.c_str() == god && dd.c_str() != devil && dc.c_str() == human)
+      else if(dx.c_str() == god && dd.c_str() != devil && dc.c_str() == human)
       {
       fprintf ( fx, "Flash: %s \n", "yes" ); // <<< write:Flash:yes
       fprintf ( fx, "Report: %s \n", "yes" );
