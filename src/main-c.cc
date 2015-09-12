@@ -61,17 +61,13 @@ void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::st
 	char filename[] = "/var/spool/sms/GSM/GSM1/smstools.XXXXXX"; // template for our file.        
 	int fd = mkstemp(filename);    // Creates and opens a new temp file r/w.
         if (fd == -1){
-	char *wexx0 = NULL;
-	wexx0 = g_strdup_printf("Message: %s \nTo Number: %lu \nStatus message: %s\nStatus code: %d\n",b.c_str(),strtol(pch,NULL,value),"Error make TMP-Filename",4010);
-	fprintf(stderr,"%s \n",wexx0);
+	printf("Message: %s \nTo: %lu \nStatus message: %s\nStatus code: %d\n",b1.c_str(),strtol(pch,NULL,value),"Error make TMP-Filename",4010);
 	exit(1);
 	}          // Check we managed to open the file.
 	close(fd);
 	fx = fopen (filename,"w+");                        // Xs are replaced with a unique number.
         if (fx == NULL){
-	char *wexx1 = NULL;
-	wexx1 = g_strdup_printf("Message: %s \nTo Number: %lu \nStatus message: %s\nStatus code: %d\n",b.c_str(),strtol(pch,NULL,value),"Error could not Write",4030);
-	fprintf(stderr,"%s \n",wexx1);
+	printf("Message: %s \nTo: %lu \nStatus message: %s\nStatus code: %d\n",b1.c_str(),strtol(pch,NULL,value),"Error could not Write",4030);
 	exit(1);
 	}          // Check we managed to open the file.
         #ifdef __linux__
@@ -131,12 +127,12 @@ void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::st
          fprintf ( fx, "\n%s \n", b1.c_str() );// <<< write:Message
          // Max. sms per message just Message count
 	    
-	    if(fclose(fx)){
+	    if(fclose(fx) == 0){
   //unlink(filename);
 	 // Test message?
-	char *wexx = NULL;
-	wexx = g_strdup_printf("Message: %s \nTo Number: %lu \nStatus message: %s\nStatus code: %d\n",b.c_str(),strtol(pch,NULL,value),"Message OK",2000);
-	fprintf(stderr,"%s \n",wexx);
+	
+	printf("Message: %s \nTo: %lu \nStatus message: %s\nStatus code: %d\n",b1.c_str(),strtol(pch,NULL,value),"Message OK",2000);
+	
 	}
     
 	pch = strtok (NULL, ",");
@@ -148,7 +144,7 @@ void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::st
 	
 
 int main(/*int argc, char *argv[]*/) {
-	freopen( "/var/log/Smiril-websms-error.log", "a+", stderr );
+	
 	printf("%s \n",Versionx());
 	int x = 0;  // Don't forget to declare variables
 	printf("\x1B[33mLoading...");
