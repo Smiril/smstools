@@ -220,7 +220,7 @@ void sendsms()
          fprintf ( fx, "\n%s \n", b.c_str() );// <<< write:Message
          // Max. sms per message just Message count
 	    
-	    if(fclose(fx)){
+	    if(fclose(fx) == 0){
   //unlink(filename);
 	 // Test message?
 	GtkWidget *msgboxxx;
