@@ -44,7 +44,7 @@ x64smstools: main-c.cc
 	$(CX1) main-c.cc $(CXXFLAGS1) -m64 -o x64smstools.exe
 debug-x64smstools: CXXFLAGS1 += -g -DDEBUG
 debug-x64smstools: main-c.cc
-	$(CX1) $(CXXFLAGS1) main-c.cc -m64 -o debug-x64smstools.exe 
+	$(CX1) $(CXXFLAGS1) main-c.cc -m64 -o debug-x64smstools.exe
 smstools3-gtk: main-gtk.cc	
 	$(CXX) main-gtk.cc $(CXXFLAGS2) -o smstools-gtk $(LIBS)
 debug-smstools3-gtk: CXXFLAGS2 += -g -DDEBUG
@@ -54,12 +54,12 @@ W32smstools-gtk: main-gtk.cc
 	$(CX1) $(CXXFLAGS2) main-gtk.cc -m32 -o W32smstools-gtk.exe $(LIBS)
 debug-W32smstools-gtk: CXXFLAGS1 += -g -DDEBUG
 debug-W32smstools-gtk: main-gtk.cc
-	$(CX1) $(CXXFLAGS1) main-c.cc -m32 -o debug-W32smstools.exe
+	$(CX1) $(CXXFLAGS1) main-gtk.cc -m32 -o debug-W32smstools-gtk.exe $(LIBS)
 x64smstools-gtk: main-gtk.cc
 	$(CX1) $(CXXFLAGS2) main-gtk.cc -m64 -o x64smstools-gtk.exe $(LIBS)
 debug-x64smstools-gtk: CXXFLAGS1 += -g -DDEBUG
 debug-x64smstools-gtk: main-gtk.cc
-	$(CX1) $(CXXFLAGS1) main-c.cc -m64 -o debug-x64smstools.exe 
+	$(CX1) $(CXXFLAGS1) main-gtk.cc -m64 -o debug-x64smstools-gtk.exe $(LIBS)
 getsms: main.cc
 	$(CXX) main.cc $(CXXFLAGS3) -o getsms
 debug-getsms: CXXFLAGS3 += -g -DDEBUG
@@ -69,12 +69,12 @@ W32getsms: main.cc
 	$(CX1) main.cc $(CXXFLAGS3) -m32 -o W32getsms.exe
 debug-W32getsms: CXXFLAGS3 += -g -DDEBUG
 debug-W32getsms: main.cc
-	$(CX1) $(CXXFLAGS3) main.cc -m32 -o debug-W32getsms.exe 
+	$(CX1) $(CXXFLAGS3) main.cc -m32 -o debug-W32getsms.exe
 x64getsms: main.cc
 	$(CX1) main.cc $(CXXFLAGS3) -m64 -o x64getsms.exe
 debug-x64getsms: CXXFLAGS3 += -g -DDEBUG
 debug-x64getsms: main.cc
-	$(CX1) $(CXXFLAGS3) main.cc -m64 -o debug-x64getsms.exe 
+	$(CX1) $(CXXFLAGS3) main.cc -m64 -o debug-x64getsms.exe
 version:
 	@echo $(VERSION3)
 	@echo $(VERSION2)
