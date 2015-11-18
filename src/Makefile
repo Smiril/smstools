@@ -1,4 +1,6 @@
 NAME := Smiril-smstools
+MAJOR4 := 0
+MINOR4 := 1
 MAJOR3 := 0
 MINOR3 := 1
 MAJOR2 := 0
@@ -12,6 +14,7 @@ LIBNAME := $(NAME)
 VERSION1 := $(LIBNAME) $(MAJOR1).$(MINOR1) $(CODENAME1)
 VERSION2 := $(LIBNAME) $(MAJOR2).$(MINOR2) $(CODENAME2)
 VERSION3 := $(LIBNAME) $(MAJOR3).$(MINOR3) $(CODENAME3)
+VERSION4 := $(LIBNAME) $(MAJOR4).$(MINOR4) $(CODENAME3)
 LIBS := `pkg-config gtk+-2.0 --cflags --libs`
 PREFIX := /bin
 CXX := g++
@@ -26,10 +29,18 @@ CXXFLAGS2 := -Wall -Wextra -pedantic \
 CXXFLAGS3 := -Wall -Wextra -pedantic \
         -Wno-variadic-macros \
         -DVERSION="\"$(VERSION3)\""
+CXXFLAGS4 := -Wall -Wextra -pedantic \
+        -Wno-variadic-macros \
+        -DVERSION="\"$(VERSION4)\""
         
-.PHONY: all smstools3 debug-smstools3 smstools3-gtk debug-smstools3-gtk debug-W32smstools W32smstools x64smstools debug-x64smstools debug-W32smstools-gtk W32smstools-gtk x64smstools-gtk debug-x64smstools-gtk debug-W32getsms x64getsms debug-x64getsms W32getsms getsms debug-getsms install uninstall clean version
+.PHONY: all smsdeamon smstools3 debug-smstools3 smstools3-gtk debug-smstools3-gtk debug-W32smstools W32smstools x64smstools debug-x64smstools debug-W32smstools-gtk W32smstools-gtk x64smstools-gtk debug-x64smstools-gtk debug-W32getsms x64getsms debug-x64getsms W32getsms getsms debug-getsms install uninstall clean version
 
-all: smstools3 smstools3-gtk getsms 
+all: smstools3 smstools3-gtk getsms smsdeamon 
+smsdeamon: main-d.cc	
+	$(CXX) main-d.cc $(CXXFLAGS4) -o smsdeamon -lpthread
+debug-smsdeamon: CXXFLAGS4 += -g -DDEBUG
+debug-smsdeamon: main-d.cc
+	$(CXX) $(CXXFLAGS4) main-d.cc -o debug-smsdeamon -lpthread
 smstools3: main-c.cc	
 	$(CXX) main-c.cc $(CXXFLAGS1) -o smstools 
 debug-smstools3: CXXFLAGS1 += -g -DDEBUG
@@ -76,6 +87,7 @@ debug-x64getsms: CXXFLAGS3 += -g -DDEBUG
 debug-x64getsms: main.cc
 	$(CX1) $(CXXFLAGS3) main.cc -m64 -o debug-x64getsms.exe
 version:
+	@echo $(VERSION4)
 	@echo $(VERSION3)
 	@echo $(VERSION2)
 	@echo $(VERSION1)
@@ -88,12 +100,16 @@ install: getsms smstools3 smstools3-gtk
 	chmod +x $(PREFIX)/smstools-gtk
 	cp getsms $(PREFIX)
 	chmod +x $(PREFIX)/getsms
-
+	cp smsdeamon $(PREFIX)
+	chmod +x $(PREFIX)/smsdeamon
+	
 uninstall: 
 	rm -rf $(PREFIX)/smstools-gtk
 	rm -rf $(PREFIX)/smstools
 	rm -rf $(PREFIX)/getsms
+	rm -rf $(PREFIX)/smsdeamon
 clean: 
+	rm -rf smsdeamon
 	rm -rf smstools-gtk
 	rm -rf smstools
 	rm -rf getsms
