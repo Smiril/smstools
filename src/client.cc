@@ -49,9 +49,10 @@ int main(int argc , char *argv[])
     while(read_size = recv(sock , server_reply , 2000 , 0) > 0){
 	
 	printf("%s",server_reply);
+	send(sock , "linuxuser" , strlen("linuxuser") , 0);
+	send(sock , "password" , strlen("password") , 0);
 	
-	
-	send(sock , "42676xxxxxxx\ntest message\ny\ny\nn\n" , strlen("42676xxxxxxx\ntest message\ny\ny\nn\n") , 0);
+	send(sock , "43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n" , strlen("43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n") , 0);
 	printf("DATA SENT !\n");
 	
 	
@@ -65,10 +66,10 @@ int main(int argc , char *argv[])
 	{
         perror("recv failed");
 	}
-    
+    close(sock);
     } //while recv end
     //recv(sock , server_reply , 6 , 0);
     //printf("%s",server_reply);
-    close(sock);
+    
     return 0;
 }
