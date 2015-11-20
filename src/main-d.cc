@@ -8,29 +8,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>    //strlen
+#include <memory.h>
+#include <errno.h>
+#include <sys/types.h>
 #include <sys/socket.h>
-#include <arpa/inet.h> //inet_addr
-#include <pthread.h> //for threading , link with lpthread
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <pthread.h> //for threading , link with -lpthread
 #include <unistd.h>
 #include <signal.h>
 #include <cstring>
 #include <memory>
 #include <errno.h>
 #include <sstream>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <syslog.h>
 
 
   #ifdef __linux__
-  #include <openssl/crypto.h>
-  #include <openssl/x509.h>
-  #include <openssl/pem.h>
-  #include <openssl/ssl.h>
-  #include <openssl/err.h>
-  #include <openssl/bio.h> 
+  #include <openssl/crypto.h> // link with -lopenssl
+  #include <openssl/x509.h> // link with -lopenssl
+  #include <openssl/pem.h> // link with -lopenssl
+  #include <openssl/ssl.h> // link with -lopenssl
+  #include <openssl/err.h> // link with -lopenssl
   #include <fstream>
-  #include <security/pam_appl.h> 
+  #include <security/pam_appl.h> // link with -lpam
   #include <termios.h>
   #include <unistd.h>
   #define PATH_MAX        4096    /* # chars in a path name including nul */
@@ -46,17 +49,18 @@
   #endif  
     
   int err;
-  int sd;
+  int socket_desc;
   struct sockaddr_in sa;
   SSL_CTX* ctx;
   SSL*     ssl;
   X509*    server_cert;
-  SSL_METHOD *meth;
-
   char*    str;
   char     buf [4096];
+  SSL_METHOD *meth;
   /* ----------------------------------------------- */
-
+#define CHK_NULL(x) if ((x)==NULL) exit (1)
+#define CHK_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
+#define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(2); }
 
   //the thread function
 void *connection_handler(void *);
@@ -133,13 +137,13 @@ int main()
 {
     skeleton_daemon();
     
-     int socket_desc , client_sock , c , *new_sock;
+     int client_sock , c , *new_sock;
     struct sockaddr_in server , client;
   OpenSSL_add_ssl_algorithms();
   meth = TLS_client_method();
   SSL_load_error_strings();
   ctx = SSL_CTX_new (meth);                        
-  //CHK_NULL(ctx);
+  CHK_NULL(ctx);
     //Create socket
     socket_desc = socket(AF_INET , SOCK_STREAM , 0);
     if (socket_desc == -1)
@@ -149,7 +153,7 @@ int main()
     }
     syslog (LOG_NOTICE, "Socket created");
     puts("Socket created");
-      
+    CHK_ERR(socket_desc, "socket");
     memset(&sa, 0, sizeof(sa));
     //Prepare the sockaddr_in structure
     server.sin_family = AF_INET;
@@ -157,7 +161,7 @@ int main()
     server.sin_port = htons( 1131 );
      
     //Bind
-    if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
+    if( bind(socket_desc, (struct sockaddr*) &sa,sizeof(sa)) < 0)
     {
         //print the error message
         syslog (LOG_NOTICE, "bind failed. Error");
@@ -172,38 +176,44 @@ int main()
     //while (1)
     //{
  err = connect(socket_desc, (struct sockaddr*) &sa,sizeof(sa));                   
- //CHK_ERR(err, "connect");
+ CHK_ERR(err, "connect");
 
   /* ----------------------------------------------- */
   /* Now we have TCP conncetion. Start SSL negotiation. */
   
   ssl = SSL_new (ctx);                         
-  //CHK_NULL(ssl);    
+  CHK_NULL(ssl);    
   SSL_set_fd(ssl, socket_desc);
   err = SSL_connect(ssl);                     
-  //CHK_SSL(err);
+  CHK_SSL(err);
     
   /* Following two steps are optional and not required for
      data exchange to be successful. */
   
   /* Get the cipher - opt */
-
-  printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
-  
+  char *chip;
+  sprintf (chip,"SSL connection using %s\n", SSL_get_cipher (ssl));
+  syslog (LOG_NOTICE, chip);
   /* Get server's certificate (note: beware of dynamic allocation) - opt */
 
   server_cert = SSL_get_peer_certificate (ssl);       
-  //CHK_NULL(server_cert);
-  printf ("Server certificate:\n");
+  CHK_NULL(server_cert);
+  char *cert;
+  sprintf (cert,"Server certificate:\n");
+  syslog (LOG_NOTICE, cert);
   
   str = X509_NAME_oneline (X509_get_subject_name (server_cert),0,0);
-  //CHK_NULL(str);
-  printf ("\t subject: %s\n", str);
+  CHK_NULL(str);
+  char *subj;
+  sprintf (subj,"subject: %s\n", str);
+  syslog (LOG_NOTICE, subj);
   OPENSSL_free (str);
 
   str = X509_NAME_oneline (X509_get_issuer_name  (server_cert),0,0);
-  //CHK_NULL(str);
-  printf ("\t issuer: %s\n", str);
+  CHK_NULL(str);
+  char *issu;
+  sprintf (issu,"issuer: %s\n", str);
+  syslog (LOG_NOTICE, issu);
   OPENSSL_free (str);
 
   /* We could do all sorts of certificate verification stuff here before
@@ -394,7 +404,9 @@ void *connection_handler(void *socket_desc)
     close(sock);  
     //Free the socket pointer
     free(socket_desc);
-    
+      SSL_free (ssl);
+      SSL_CTX_free (ctx);
+      
     return 0;  
     //return 0;
 }
