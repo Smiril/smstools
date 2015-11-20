@@ -20,6 +20,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <syslog.h>
+#include <fstream>
+#include <security/pam_appl.h>
+#include <unistd.h>
 
   #ifdef __linux__
   #include <termios.h>
@@ -38,6 +41,15 @@
 //the thread function
 void *connection_handler(void *);
 void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::string dc);
+
+struct pam_response *reply;
+
+//function used to get user input
+int function_conversation(int num_msg, const struct pam_message **msg, struct pam_response **resp, void *appdata_ptr)
+{
+  *resp = reply;
+  return PAM_SUCCESS;
+}
 
 static void skeleton_daemon()
 {
@@ -180,7 +192,8 @@ void *connection_handler(void *socket_desc)
     // create the buffer with space for the data
     const unsigned int MAX_BUF_LENGTH = 4096;
     char buffer[PATH_MAX];
-    const char client_version[] = "V1_STANDARD_LINUX";
+    char bufferA[PATH_MAX];
+    char bufferB[PATH_MAX];
     //Get the socket descriptor
     int sock = *(int*)socket_desc;
     int read_size;
@@ -196,10 +209,59 @@ void *connection_handler(void *socket_desc)
     //Send some messages to the client
     std::string messageg = "Greetings! I am your Smiril smstools SMS Server v 0.1\n";
     write(sock , messageg.c_str() , strlen(messageg.c_str()));
+    read(sock , bufferA , PATH_MAX );
+  const char *username;
+  username = bufferA;
+
+  const struct pam_conv local_conversation = { function_conversation, NULL };
+  pam_handle_t *local_auth_handle = NULL; // this gets set by pam_start
+
+  int retval;
+
+  // local_auth_handle gets set based on the service
+  retval = pam_start("common-auth", username, &local_conversation, &local_auth_handle);
+
+  if (retval != PAM_SUCCESS)
+  {
+    std::cout << "pam_start returned " << retval << std::endl;
+    return retval;
+  }
+
+  read(sock , bufferB , PATH_MAX );
+  reply = (struct pam_response *)malloc(sizeof(struct pam_response));
+
+  // *** Get the password by any method, or maybe it was passed into this function.
+  reply[0].resp = bufferB;
+  reply[0].resp_retcode = 0;
+
+  
+  retval = pam_authenticate(local_auth_handle, 0);
+
+  if (retval != PAM_SUCCESS)
+  {
+    if (retval == PAM_AUTH_ERR)
+    {
+      std::cout << "Authentication failure." << std::endl;
+    }
+    else
+    {
+      std::cout << "pam_authenticate returned " << retval << std::endl;
+    }
+    return 0;
+  }
+    //Send some messages to the client
+    std::string messagegx = "Authenticated.\n";
+    write(sock , messagegx.c_str() , strlen(messagegx.c_str()));
     
-    //Send Get Client version
-    std::string versionxx = "VERSION\n";
-    write(sock , versionxx.c_str() , strlen(versionxx.c_str()));
+  retval = pam_end(local_auth_handle, retval);
+
+  if (retval != PAM_SUCCESS)
+  {
+    //Send some messages to the client
+    std::string messagegy = "Failure.\n";
+    write(sock , messagegy.c_str() , strlen(messagegy.c_str()));
+    return 0;
+  }
     	  
       //Receive a message from client
       while( (read_size = read(sock , buffer , PATH_MAX )) > 0 )
@@ -253,8 +315,9 @@ void *connection_handler(void *socket_desc)
     close(sock);  
     //Free the socket pointer
     free(socket_desc);
-      
-    return 0;
+    
+    return 0;  
+    //return 0;
 }
 
 void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::string dc)
