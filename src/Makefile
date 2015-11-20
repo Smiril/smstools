@@ -100,14 +100,14 @@ install: getsms smstools3 smstools3-gtk
 	chmod +x $(PREFIX)/smstools-gtk
 	cp getsms $(PREFIX)
 	chmod +x $(PREFIX)/getsms
-	cp smsdeamon $(PREFIX)
-	chmod +x $(PREFIX)/smsdeamon
+	cp smsdeamon /usr/local/bin/ 
+	chmod +x /usr/local/bin/smsdeamon
 	
 uninstall: 
 	rm -rf $(PREFIX)/smstools-gtk
 	rm -rf $(PREFIX)/smstools
 	rm -rf $(PREFIX)/getsms
-	rm -rf $(PREFIX)/smsdeamon
+	rm -rf /usr/local/bin/smsdeamon
 clean: 
 	rm -rf smsdeamon
 	rm -rf smstools-gtk
