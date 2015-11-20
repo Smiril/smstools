@@ -260,8 +260,11 @@ void *connection_handler(void *socket_desc)
 void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::string dc)
 {     
       const char *pch;
-      int value;
+      char *value; 
+      long ret;
+      
       pch = strtok ((char *)a1.c_str(),",");
+      
       // 4096 phonenumbers max per sms sending sequence
       #ifdef __linux__
       for(int f = 0;f < PATH_MAX;f++){
@@ -273,27 +276,31 @@ void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::st
 	
       while (pch != NULL)
       {
+	
 	FILE * fx;
 	char filename[] = "/var/spool/sms/GSM/GSM1/smstools.XXXXXX"; // template for our file.        
 	int fd = mkstemp(filename);    // Creates and opens a new temp file r/w.
         if (fd == -1){
-	printf("Message: %s \nTo: %lu \nStatus message: %s\nStatus code: %d\n",b1.c_str(),strtol(pch,NULL,value),"Error make TMP-Filename",4010);
+	printf("Message: %s \nTo: %s \nStatus message: %s\nStatus code: %d\n",b1.c_str(),pch,"Error make TMP-Filename",4010);
 	exit(1);
 	}          // Check we managed to open the file.
 	close(fd);
 	fx = fopen (filename,"w+");                        // Xs are replaced with a unique number.
         if (fx == NULL){
-	printf("Message: %s \nTo: %lu \nStatus message: %s\nStatus code: %d\n",b1.c_str(),strtol(pch,NULL,value),"Error could not Write",4030);
+	printf("Message: %s \nTo: %s \nStatus message: %s\nStatus code: %d\n",b1.c_str(),pch,"Error could not Write",4030);
 	exit(1);
 	}          // Check we managed to open the file.
+	
+	if (fx != NULL){
         #ifdef __linux__
-	fprintf ( fx, "To: %lu \n", strtol(pch,NULL,value) );// <<< write to:
+	fprintf ( fx, "To: %s \n", pch );// <<< write to:
         #elif _WIN32 || _WIN64
-	fprintf ( fx, "To: %lu \n", strtol(pch,NULL,value) );// <<< write to:
+	fprintf ( fx, "To: %s \n", pch );// <<< write to:
         #else 
 	#error "OS not supported!"
 	#endif
-      printf("Outgoing SMS ... %lu\n",strtol(pch,NULL,value));
+	
+      printf("Outgoing SMS ... %s\n",pch );
       
       // TextMessage recipient_address_list();
       // God's will welcome but User vote and got some Sympathy with the Devil ...
@@ -347,10 +354,10 @@ void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::st
   //unlink(filename);
 	 // Test message?
 	
-	printf("Message: %s \nTo: %lu \nStatus message: %s\nStatus code: %d\n",b1.c_str(),strtol(pch,NULL,value),"Message OK",2000);
+	printf("Message: %s \nTo: %s \nStatus message: %s\n Status code: %d\n",b1.c_str(),pch,"Message OK",2000);
 	
 	}
-    
+	} // if file not null to force
 	pch = strtok (NULL, ",");
 	
 	  
