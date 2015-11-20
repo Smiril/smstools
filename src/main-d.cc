@@ -20,11 +20,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <syslog.h>
-#include <fstream>
-#include <security/pam_appl.h>
-#include <unistd.h>
+
 
   #ifdef __linux__
+  #include <fstream>
+  #include <security/pam_appl.h> 
   #include <termios.h>
   #include <unistd.h>
   #define PATH_MAX        4096    /* # chars in a path name including nul */
@@ -41,7 +41,13 @@
 //the thread function
 void *connection_handler(void *);
 void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::string dc);
-
+const char* Versionx() {
+#ifdef VERSION
+  return VERSION;
+#else
+  return "";
+#endif
+}
 struct pam_response *reply;
 
 //function used to get user input
@@ -178,7 +184,7 @@ int main()
         //break;
     //}
 
-    syslog (LOG_NOTICE, "VPN Helper Daemon terminated.");
+    syslog (LOG_NOTICE, "SMS Daemon terminated.");
     closelog();
 
     return EXIT_SUCCESS;
@@ -207,8 +213,9 @@ void *connection_handler(void *socket_desc)
 	std::string g = "";
 	
     //Send some messages to the client
-    std::string messageg = "Greetings! I am your Smiril smstools SMS Server v 0.1\n";
-    write(sock , messageg.c_str() , strlen(messageg.c_str()));
+	char vers[512];
+    snprintf(vers,512,"Greetings! I am your %s\n",Versionx());
+    write(sock , vers , strlen(vers));
     read(sock , bufferA , PATH_MAX );
   const char *username;
   username = bufferA;
@@ -224,7 +231,7 @@ void *connection_handler(void *socket_desc)
   if (retval != PAM_SUCCESS)
   {
     std::cout << "pam_start returned " << retval << std::endl;
-    return retval;
+    return 0;
   }
 
   read(sock , bufferB , PATH_MAX );
