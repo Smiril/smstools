@@ -23,6 +23,12 @@
 
 
   #ifdef __linux__
+  #include <openssl/crypto.h>
+  #include <openssl/x509.h>
+  #include <openssl/pem.h>
+  #include <openssl/ssl.h>
+  #include <openssl/err.h>
+  #include <openssl/bio.h> 
   #include <fstream>
   #include <security/pam_appl.h> 
   #include <termios.h>
@@ -37,8 +43,22 @@
   #include <windows.h>
   #else 
   #error "SDK not support your OS!"
-  #endif
-//the thread function
+  #endif  
+    
+  int err;
+  int sd;
+  struct sockaddr_in sa;
+  SSL_CTX* ctx;
+  SSL*     ssl;
+  X509*    server_cert;
+  SSL_METHOD *meth;
+
+  char*    str;
+  char     buf [4096];
+  /* ----------------------------------------------- */
+
+
+  //the thread function
 void *connection_handler(void *);
 void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::string dc);
 const char* Versionx() {
@@ -115,7 +135,11 @@ int main()
     
      int socket_desc , client_sock , c , *new_sock;
     struct sockaddr_in server , client;
-     
+  OpenSSL_add_ssl_algorithms();
+  meth = TLS_client_method();
+  SSL_load_error_strings();
+  ctx = SSL_CTX_new (meth);                        
+  //CHK_NULL(ctx);
     //Create socket
     socket_desc = socket(AF_INET , SOCK_STREAM , 0);
     if (socket_desc == -1)
@@ -125,7 +149,8 @@ int main()
     }
     syslog (LOG_NOTICE, "Socket created");
     puts("Socket created");
-     
+      
+    memset(&sa, 0, sizeof(sa));
     //Prepare the sockaddr_in structure
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
@@ -146,15 +171,55 @@ int main()
     listen(socket_desc , 3); 
     //while (1)
     //{
-     
-     
+ err = connect(socket_desc, (struct sockaddr*) &sa,sizeof(sa));                   
+ //CHK_ERR(err, "connect");
+
+  /* ----------------------------------------------- */
+  /* Now we have TCP conncetion. Start SSL negotiation. */
+  
+  ssl = SSL_new (ctx);                         
+  //CHK_NULL(ssl);    
+  SSL_set_fd(ssl, socket_desc);
+  err = SSL_connect(ssl);                     
+  //CHK_SSL(err);
+    
+  /* Following two steps are optional and not required for
+     data exchange to be successful. */
+  
+  /* Get the cipher - opt */
+
+  printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
+  
+  /* Get server's certificate (note: beware of dynamic allocation) - opt */
+
+  server_cert = SSL_get_peer_certificate (ssl);       
+  //CHK_NULL(server_cert);
+  printf ("Server certificate:\n");
+  
+  str = X509_NAME_oneline (X509_get_subject_name (server_cert),0,0);
+  //CHK_NULL(str);
+  printf ("\t subject: %s\n", str);
+  OPENSSL_free (str);
+
+  str = X509_NAME_oneline (X509_get_issuer_name  (server_cert),0,0);
+  //CHK_NULL(str);
+  printf ("\t issuer: %s\n", str);
+  OPENSSL_free (str);
+
+  /* We could do all sorts of certificate verification stuff here before
+     deallocating the certificate. */
+
+  X509_free (server_cert);
+  
+  /* --------------------------------------------------- */
     //Accept and incoming connection
     syslog (LOG_NOTICE, "Waiting for incoming connections...");
     puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
-    while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
+    while( (client_sock = SSL_accept(ssl) ))
     {
-        syslog (LOG_NOTICE, "Connection accepted");
+
+      syslog (LOG_NOTICE, "Connection accepted");
         puts("Connection accepted");
          
         pthread_t sniffer_thread;
@@ -215,8 +280,10 @@ void *connection_handler(void *socket_desc)
     //Send some messages to the client
 	char vers[512];
     snprintf(vers,512,"Greetings! I am your %s\n",Versionx());
-    write(sock , vers , strlen(vers));
-    read(sock , bufferA , PATH_MAX );
+    SSL_write(ssl, vers, strlen(vers));
+    //write(sock , vers , strlen(vers));
+    SSL_read(ssl, (char *)bufferA, PATH_MAX);
+    //read(sock , bufferA , PATH_MAX );
   const char *username;
   username = bufferA;
 
@@ -234,7 +301,8 @@ void *connection_handler(void *socket_desc)
     return 0;
   }
 
-  read(sock , bufferB , PATH_MAX );
+  SSL_read(ssl, (char *)bufferB, PATH_MAX);
+  //read(sock , bufferB , PATH_MAX );
   reply = (struct pam_response *)malloc(sizeof(struct pam_response));
 
   // *** Get the password by any method, or maybe it was passed into this function.
@@ -258,7 +326,8 @@ void *connection_handler(void *socket_desc)
   }
     //Send some messages to the client
     std::string messagegx = "Authenticated.\n";
-    write(sock , messagegx.c_str() , strlen(messagegx.c_str()));
+    SSL_write(ssl, messagegx.c_str(), strlen(messagegx.c_str()));
+    //write(sock , messagegx.c_str() , strlen(messagegx.c_str()));
     
   retval = pam_end(local_auth_handle, retval);
 
@@ -266,12 +335,13 @@ void *connection_handler(void *socket_desc)
   {
     //Send some messages to the client
     std::string messagegy = "Failure.\n";
-    write(sock , messagegy.c_str() , strlen(messagegy.c_str()));
+    SSL_write(ssl, messagegy.c_str(), strlen(messagegy.c_str()));
+    //write(sock , messagegy.c_str() , strlen(messagegy.c_str()));
     return 0;
   }
     	  
       //Receive a message from client
-      while( (read_size = read(sock , buffer , PATH_MAX )) > 0 )
+      while( (read_size = SSL_read(ssl, (char *)buffer, PATH_MAX)) > 0 )
       {
 	syslog (LOG_NOTICE, buffer);
 	// number
@@ -295,13 +365,15 @@ void *connection_handler(void *socket_desc)
 	sendsms(hx0,hx1,hx2,hx3,hx4);
 	//Send Get Client version
 	std::string messagegood = "2000\n\0";
-	write(sock , messagegood.c_str() , strlen(messagegood.c_str()));	
+	SSL_write(ssl, messagegood.c_str(), strlen(messagegood.c_str()));
+	//write(sock , messagegood.c_str() , strlen(messagegood.c_str()));	
 	close(sock);
 	}
 	else{
 	  //Send Get Client version
-	std::string messagegood = "ERROR\n\0";
-	write(sock , messagegood.c_str() , strlen(messagegood.c_str()));	
+	std::string messagegoodx = "ERROR\n\0";
+	SSL_write(ssl, messagegoodx.c_str(), strlen(messagegoodx.c_str()));
+	//write(sock , messagegoodx.c_str() , strlen(messagegoodx.c_str()));	
 	close(sock);
 	}
 	
