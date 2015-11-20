@@ -142,7 +142,7 @@ void sendsms()
         if (fd == -1){
 	GtkWidget *msgboxxx0;
 	char *wexx0 = NULL;
-	wexx0 = g_strdup_printf("Message: %s \nTo: %lu \nStatus message: %s\nStatus code: %d\n",b.c_str(),strtol(pch,NULL,value),"Error make TMP-Filename",4010);
+	wexx0 = g_strdup_printf("Message: %s \nTo: %s \nStatus message: %s\nStatus code: %d\n",b.c_str(),pch,"Error make TMP-Filename",4010);
 	msgboxxx0 = gtk_message_dialog_new_with_markup(NULL,GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, wexx0 );
 	gtk_window_set_title(GTK_WINDOW(msgboxxx0), "ERROR");
 	gtk_dialog_run(GTK_DIALOG(msgboxxx0));
@@ -155,7 +155,7 @@ void sendsms()
         if (fx == NULL){
 	GtkWidget *msgboxxx1;
 	char *wexx1 = NULL;
-	wexx1 = g_strdup_printf("Message: %s \nTo: %lu \nStatus message: %s\nStatus code: %d\n",b.c_str(),strtol(pch,NULL,value),"Error could not Write",4030);
+	wexx1 = g_strdup_printf("Message: %s \nTo: %s \nStatus message: %s\nStatus code: %d\n",b.c_str(),pch,"Error could not Write",4030);
 	msgboxxx1 = gtk_message_dialog_new_with_markup(NULL,GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, wexx1 );
 	gtk_window_set_title(GTK_WINDOW(msgboxxx1), "ERROR");
 	gtk_dialog_run(GTK_DIALOG(msgboxxx1));
@@ -164,13 +164,13 @@ void sendsms()
 	exit(1);
 	}         // Check we managed to open the file.
         #ifdef __linux__
-	fprintf ( fx, "To: %lu \n", strtol(pch,NULL,value) );// <<< write to:
+	fprintf ( fx, "To: %s \n", pch );// <<< write to:
         #elif _WIN32 || _WIN64
-	fprintf ( fx, "To: %lu \n", strtol(pch,NULL,value) );// <<< write to:
+	fprintf ( fx, "To: %s \n", pch );// <<< write to:
         #else 
 	#error "OS not supported!"
 	#endif
-      printf("Outgoing SMS ... %lu\n",strtol(pch,NULL,value));
+      printf("Outgoing SMS ... %s\n",pch);
       
       // TextMessage recipient_address_list();
       // God's will welcome but User vote and got some Sympathy with the Devil ...
@@ -225,12 +225,12 @@ void sendsms()
 	 // Test message?
 	GtkWidget *msgboxxx;
 	char *wexx = NULL;
-	wexx = g_strdup_printf("Message: %s \nTo: %lu \nStatus message: %s\nStatus code: %d\n",b.c_str(),strtol(pch,NULL,value),"Message OK",2000);
+	wexx = g_strdup_printf("Message: %s \nTo: %s \nStatus message: %s\nStatus code: %d\n",b.c_str(),pch,"Message OK",2000);
         msgboxxx = gtk_message_dialog_new_with_markup(NULL,GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, wexx );
 	gtk_window_set_title(GTK_WINDOW(msgboxxx), "INFO");
 	gtk_dialog_run(GTK_DIALOG(msgboxxx));
 	gtk_widget_destroy( GTK_WIDGET(msgboxxx) );
-	fprintf(stderr,"Message: %s \nTo: %lu \nStatus: %s \nStatus Code: %d \n",b.c_str(),strtol(pch,NULL,value),"Message OK",2000);
+	fprintf(stderr,"Message: %s \nTo: %s \nStatus: %s \nStatus Code: %d \n",b.c_str(),pch,"Message OK",2000);
 	}
 	pch = strtok (NULL, ",");
       } // while end
