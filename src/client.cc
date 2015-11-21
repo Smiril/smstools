@@ -5,8 +5,13 @@
 */
 #include <stdio.h> //printf
 #include <string.h>    //strlen
-#include <sys/socket.h>    //socket
-#include <arpa/inet.h> //inet_addr
+#include <memory.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #include <unistd.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -16,6 +21,7 @@
 #include <memory>
 #include <errno.h>
 #include <sstream>
+#include <openssl/rsa.h>
 #include <openssl/crypto.h> // link with -lcrypto
 #include <openssl/tls1.h>
 #include <openssl/x509.h>
@@ -34,12 +40,14 @@ int main(int argc , char *argv[])
 {
   int err;
   int sd;
+  int read_size;
   struct sockaddr_in sa;
   SSL_CTX* ctx;
   SSL*     ssl;
   X509*    server_cert;
   char*    str;
   char     buf [PATH_MAX];
+  char 	   server_reply[PATH_MAX];
   const SSL_METHOD *meth;
 
   OpenSSL_add_ssl_algorithms();
@@ -50,8 +58,7 @@ int main(int argc , char *argv[])
 
   /* ----------------------------------------------- */
   /* Create a socket and connect to server using normal socket calls. */
-    char message[PATH_MAX] , server_reply[PATH_MAX];
-    int read_size;
+
     
     //Create socket
     sd = socket(AF_INET , SOCK_STREAM , 0);
@@ -88,7 +95,8 @@ int main(int argc , char *argv[])
      data exchange to be successful. */
   
     while(read_size = SSL_read(ssl, server_reply, sizeof(server_reply) ) > 0){
-	CHK_SSL(read_size);
+	
+        CHK_SSL(read_size);
 	printf("%s",server_reply);
 	// PAM AUTH USER DETAILS
 	err = SSL_write (ssl, "user", strlen("user")); 
@@ -104,13 +112,11 @@ int main(int argc , char *argv[])
 	CHK_SSL(err);
 	printf("sending sms\n");
 	//send(sd , "43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n" , strlen("43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n") , 0);
-	
-	
-	
+		
 	if(read_size == 0)
 	{
         printf("Server disconnect's");
-        fflush(stdout);
+        //fflush(stdout);
 	break;
 	}
 	else if(read_size == -1)
@@ -118,8 +124,7 @@ int main(int argc , char *argv[])
         perror("recv failed");
 	}
     } //while recv end
-    //recv(sock , server_reply , 6 , 0);
-    //printf("%s",server_reply);
+
     close(sd);
     SSL_free(ssl);
     SSL_CTX_free(ctx);
