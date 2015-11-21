@@ -1,0 +1,8 @@
+Nov 21 20:10:31 linux sudo:      github : TTY=pts/0 ; PWD=/home/github/smstools/src ; USER=root ; COMMAND=./smstools-deamon
+Nov 21 20:10:31 linux sudo: pam_unix(sudo:session): session opened for user root by dv7(uid=0)
+Nov 21 20:10:31 linux sudo: pam_unix(sudo:session): session closed for user root
+Nov 21 20:10:31 linux Smiril-smstools-deamon[17850]: Socket created
+Nov 21 20:10:31 linux Smiril-smstools-deamon[17850]: bind done
+Nov 21 20:10:31 linux Smiril-smstools-deamon[17850]: Waiting for incoming connections...
+Nov 21 20:10:34 linux Smiril-smstools-deamon[17850]: Connection accepted
+Nov 21 20:10:37 linux 139915021207216:error:1408F10B:SSL routines:SSL3_GET_RECORD:wrong version number:s3_pkt.c:358:
