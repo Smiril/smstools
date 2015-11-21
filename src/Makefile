@@ -1,6 +1,6 @@
 NAME := Smiril-smstools
 MAJOR4 := 0
-MINOR4 := 1
+MINOR4 := 2
 MAJOR3 := 0
 MINOR3 := 1
 MAJOR2 := 0
