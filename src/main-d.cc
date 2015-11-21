@@ -56,6 +56,7 @@
 #define KEYF  HOME  "ca.key"
   
   int err;
+  int sd;
   int socket_desc;
   struct sockaddr_in sa_serv;
   struct sockaddr_in sa;
@@ -204,17 +205,17 @@ int main()
     puts("bind done");
     //TODO: Insert daemon code here.
      //Listen
-    err = listen(socket_desc , 3);
-    CHK_ERR(err, "listen");
+    listen(socket_desc , 3);
+    
     client_len = sizeof(sa_serv);
     //while (1)
     //{
  
   /* --------------------------------------------------- */
     //Accept and incoming connection
-    char *spex;
-    sprintf (spex,"Connection from %lx, port %x\nWaiting for incoming connections...\n",sa.sin_addr.s_addr, sa.sin_port);
-    syslog (LOG_NOTICE, spex);
+    //char *spex;
+    //sprintf (spex,"Connection from %lx, port %x\nWaiting for incoming connections...\n",sa.sin_addr.s_addr, sa.sin_port);
+    syslog (LOG_NOTICE, "Waiting for incoming connections...");
     puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
     while( (client_sock = accept(socket_desc, (struct sockaddr*) &sa_serv, &client_len ) ))
@@ -224,7 +225,7 @@ int main()
         puts("Connection accepted");
          ssl = SSL_new (ctx);                           
 	 CHK_NULL(ssl);
-  SSL_set_fd (ssl, socket_desc);
+  SSL_set_fd (ssl, sd);
   err = SSL_accept (ssl);                        
   CHK_SSL(err);
   
@@ -253,7 +254,7 @@ int main()
     /* We could do all sorts of certificate verification stuff here before
        deallocating the certificate. */
     
-    //X509_free (client_cert);
+    X509_free (client_cert);
   } else{
     char *cora;
     sprintf (cora,"Client does not have certificate.\n");
