@@ -60,7 +60,7 @@
   /* ----------------------------------------------- */
 #define CHK_NULL(x) if ((x)==NULL) exit (1)
 #define CHK_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
-#define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(2); }
+//#define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(2); }
 
   //the thread function
 void *connection_handler(void *);
@@ -140,7 +140,7 @@ int main()
      int client_sock , c , *new_sock;
     struct sockaddr_in server , client;
   OpenSSL_add_ssl_algorithms();
-  meth = TLS_client_method();
+  meth = NULL;//TLS_client_method();
   SSL_load_error_strings();
   ctx = SSL_CTX_new (meth);                        
   CHK_NULL(ctx);
@@ -185,7 +185,7 @@ int main()
   CHK_NULL(ssl);    
   SSL_set_fd(ssl, socket_desc);
   err = SSL_connect(ssl);                     
-  CHK_SSL(err);
+  //CHK_SSL(err);
     
   /* Following two steps are optional and not required for
      data exchange to be successful. */
@@ -201,7 +201,7 @@ int main()
   char *cert;
   sprintf (cert,"Server certificate:\n");
   syslog (LOG_NOTICE, cert);
-  
+ /* 
   str = X509_NAME_oneline (X509_get_subject_name (server_cert),0,0);
   CHK_NULL(str);
   char *subj;
@@ -215,11 +215,11 @@ int main()
   sprintf (issu,"issuer: %s\n", str);
   syslog (LOG_NOTICE, issu);
   OPENSSL_free (str);
-
+*/
   /* We could do all sorts of certificate verification stuff here before
      deallocating the certificate. */
 
-  X509_free (server_cert);
+  //X509_free (server_cert);
   
   /* --------------------------------------------------- */
     //Accept and incoming connection
@@ -335,21 +335,33 @@ void *connection_handler(void *socket_desc)
     return 0;
   }
     //Send some messages to the client
-    std::string messagegx = "Authenticated.\n";
+    std::string messagegx = "\x1B[31mAuthenticated.\x1B[39m\n";
     SSL_write(ssl, messagegx.c_str(), strlen(messagegx.c_str()));
     //write(sock , messagegx.c_str() , strlen(messagegx.c_str()));
     
   retval = pam_end(local_auth_handle, retval);
 
-  if (retval != PAM_SUCCESS)
+  if (retval == PAM_SUCCESS)
   {
     //Send some messages to the client
-    std::string messagegy = "Failure.\n";
+    std::string messagegs = "\x1B[32mSuccess.\x1B[39m\n";
+    SSL_write(ssl, messagegs.c_str(), strlen(messagegs.c_str()));
+  }
+  else{
+    //Send some messages to the client
+    std::string messagegy = "\x1B[33mFailure.\x1B[39m\n";
     SSL_write(ssl, messagegy.c_str(), strlen(messagegy.c_str()));
     //write(sock , messagegy.c_str() , strlen(messagegy.c_str()));
+    
+    close(sock);  
+    //Free the socket pointer
+    free(socket_desc);
+      SSL_free (ssl);
+      SSL_CTX_free (ctx);
+      
     return 0;
-  }
-    	  
+      }
+      
       //Receive a message from client
       while( (read_size = SSL_read(ssl, (char *)buffer, PATH_MAX)) > 0 )
       {
