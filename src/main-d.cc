@@ -171,16 +171,16 @@ int main()
   meth = TLSv1_server_method();
   ctx = SSL_CTX_new (meth);
   if (!ctx) {
-    syslog (LOG_NOTICE, "No Method choosen");
+    syslog (LOG_NOTICE, "There's NO Crypto Method choosen\n");
     exit(2);
   }
   
   if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
-    syslog (LOG_NOTICE, "No PEM Cert File");
+    syslog (LOG_NOTICE, "PEM Cert File is NOT Valid\n");
     exit(3);
   }
   if (SSL_CTX_use_PrivateKey_file(ctx, KEYF, SSL_FILETYPE_PEM) <= 0) {
-    syslog (LOG_NOTICE, "No PEM CertKey File");
+    syslog (LOG_NOTICE, "PEM CertKey File is NOT Valid\n");
     exit(4);
   }
 
