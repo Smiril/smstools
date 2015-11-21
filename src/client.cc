@@ -1,6 +1,5 @@
 /*
-    C ECHO client example using sockets
-    TODO write ssl socket code openssl based
+    C ECHO client example using sslsockets
 */
 #include <stdio.h> //printf
 #include <string.h>    //strlen
@@ -15,10 +14,11 @@
 #include <memory>
 #include <errno.h>
 #include <sstream>
-#include <openssl/crypto.h>
+#include <openssl/crypto.h> // link with -lcrypto
+#include <openssl/tls1.h>
 #include <openssl/x509.h>
 #include <openssl/pem.h>
-#include <openssl/ssl.h>
+#include <openssl/ssl.h> // link with -lssl
 #include <openssl/err.h>
 
 
@@ -38,10 +38,10 @@ int main(int argc , char *argv[])
   X509*    server_cert;
   char*    str;
   char     buf [4096];
-  SSL_METHOD *meth;
+  const SSL_METHOD *meth;
 
   OpenSSL_add_ssl_algorithms();
-  meth = TLS_client_method();
+  meth = TLSv1_client_method();
   SSL_load_error_strings();
   ctx = SSL_CTX_new (meth);                        
   CHK_NULL(ctx);
@@ -68,18 +68,20 @@ int main(int argc , char *argv[])
   
  
     //Connect to remote server
-    if ( err = connect(sd , (struct sockaddr *)&sa , sizeof(sa)) < 0)
+    if ( connect(sd , (struct sockaddr *)&sa , sizeof(sa)) < 0)
     {
         perror("connect failed. Error");
         return 1;
     }
-    CHK_ERR(err, "connect"); 
+    //CHK_ERR(err, "connect"); 
     puts("Connected");
 /* Now we have TCP conncetion. Start SSL negotiation. */
   
-  ssl = SSL_new (ctx);                         CHK_NULL(ssl);    
+  ssl = SSL_new (ctx);                         
+  CHK_NULL(ssl);    
   SSL_set_fd (ssl, sd);
-  err = SSL_connect (ssl);                     CHK_SSL(err);
+  err = SSL_connect (ssl);                    
+  CHK_SSL(err);
     
   /* Following two steps are optional and not required for
      data exchange to be successful. */
