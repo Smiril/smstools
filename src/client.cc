@@ -1,5 +1,6 @@
 /*
-    C ECHO client example using sslsockets
+    C ECHO client example using sockets
+    TODO write ssl socket code openssl based
 */
 #include <stdio.h> //printf
 #include <string.h>    //strlen
@@ -86,8 +87,8 @@ int main(int argc , char *argv[])
   /* Following two steps are optional and not required for
      data exchange to be successful. */
   
-    while(read_size = SSL_read(ssl, server_reply, sizeof(server_reply) - 1) > 0){
-	CHK_SSL(err);
+    while(read_size = SSL_read(ssl, server_reply, sizeof(server_reply) ) > 0){
+	CHK_SSL(read_size);
 	printf("%s",server_reply);
 	// PAM AUTH USER DETAILS
 	SSL_write (ssl, "user", strlen("user")); 
