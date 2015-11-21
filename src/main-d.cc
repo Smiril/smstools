@@ -28,6 +28,7 @@
 
   #ifdef __linux__
   #include <openssl/crypto.h> // link with -lcrypto
+  #include <openssl/tls1.h> // link with -lssl
   #include <openssl/x509.h> // link with -lssl
   #include <openssl/pem.h> // link with -lssl
   #include <openssl/ssl.h> // link with -lssl
@@ -51,8 +52,8 @@
   /* define HOME to be dir for key and cert files... */
 #define HOME "./"
 /* Make these what you want for cert & key files */
-#define CERTF  HOME "foo-cert.pem"
-#define KEYF  HOME  "foo-cert.pem"
+#define CERTF  HOME "ca.crt"
+#define KEYF  HOME  "ca.key"
   
   int err;
   int socket_desc;
@@ -64,7 +65,7 @@
   X509*    client_cert;
   char*    str;
   char     buf [4096];
-  SSL_METHOD *meth;
+  const SSL_METHOD *meth;
   
 #define CHK_NULL(x) if ((x)==NULL) exit (1)
 #define CHK_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
@@ -151,7 +152,7 @@ int main()
 
   SSL_load_error_strings();
   OpenSSL_add_ssl_algorithms();
-  meth = NULL;//TLS_server_method();
+  meth = TLSv1_server_method();
   ctx = SSL_CTX_new (meth);
   if (!ctx) {
     ERR_print_errors_fp(stderr);
@@ -228,18 +229,20 @@ int main()
   CHK_SSL(err);
   
   /* Get the cipher - opt */
-  
-  printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
-  
+  char *jessy0,*jessy1,*jessy2;
+  sprintf (jessy0,"SSL connection using %s\n", SSL_get_cipher (ssl));
+  syslog (LOG_NOTICE, jessy0);
   /* Get client's certificate (note: beware of dynamic allocation) - opt */
 
   client_cert = SSL_get_peer_certificate (ssl);
   if (client_cert != NULL) {
-    printf ("Client certificate:\n");
+    sprintf (jessy1,"Client certificate: %s\n",client_cert);
+    syslog (LOG_NOTICE, jessy1);
     
     str = X509_NAME_oneline (X509_get_subject_name (client_cert), 0, 0);
     CHK_NULL(str);
-    printf ("\t subject: %s\n", str);
+    sprintf (jessy2,"subject: %s\n", str);
+    syslog (LOG_NOTICE, jessy2);
     OPENSSL_free (str);
     /*
     str = X509_NAME_oneline (X509_get_issuer_name  (client_cert), 0, 0);
@@ -251,9 +254,11 @@ int main()
        deallocating the certificate. */
     
     //X509_free (client_cert);
-  } else
-    printf ("Client does not have certificate.\n");
-
+  } else{
+    char *cora;
+    sprintf (cora,"Client does not have certificate.\n");
+    syslog (LOG_NOTICE, cora);
+    }
   /* DATA EXCHANGE - Receive message and send reply. */
         pthread_t sniffer_thread;
         new_sock = (int*)malloc(1);
