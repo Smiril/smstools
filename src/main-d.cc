@@ -48,19 +48,27 @@
   #error "SDK not support your OS!"
   #endif  
     
+  /* define HOME to be dir for key and cert files... */
+#define HOME "./"
+/* Make these what you want for cert & key files */
+#define CERTF  HOME "foo-cert.pem"
+#define KEYF  HOME  "foo-cert.pem"
+  
   int err;
   int socket_desc;
+  struct sockaddr_in sa_serv;
   struct sockaddr_in sa;
+  socklen_t client_len;
   SSL_CTX* ctx;
   SSL*     ssl;
-  X509*    server_cert;
+  X509*    client_cert;
   char*    str;
   char     buf [4096];
   SSL_METHOD *meth;
-  /* ----------------------------------------------- */
+  
 #define CHK_NULL(x) if ((x)==NULL) exit (1)
 #define CHK_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
-//#define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(2); }
+#define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(2); }
 
   //the thread function
 void *connection_handler(void *);
@@ -139,11 +147,33 @@ int main()
     
      int client_sock , c , *new_sock;
     struct sockaddr_in server , client;
-  OpenSSL_add_ssl_algorithms();
-  meth = NULL;//TLS_client_method();
+  /* SSL preliminaries. We keep the certificate and key with the context. */
+
   SSL_load_error_strings();
-  ctx = SSL_CTX_new (meth);                        
-  CHK_NULL(ctx);
+  OpenSSL_add_ssl_algorithms();
+  meth = NULL;//TLS_server_method();
+  ctx = SSL_CTX_new (meth);
+  if (!ctx) {
+    ERR_print_errors_fp(stderr);
+    exit(2);
+  }
+  
+  if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
+    ERR_print_errors_fp(stderr);
+    exit(3);
+  }
+  if (SSL_CTX_use_PrivateKey_file(ctx, KEYF, SSL_FILETYPE_PEM) <= 0) {
+    ERR_print_errors_fp(stderr);
+    exit(4);
+  }
+
+  if (!SSL_CTX_check_private_key(ctx)) {
+    fprintf(stderr,"Private key does not match the certificate public key\n");
+    exit(5);
+  }
+
+  /* ----------------------------------------------- */
+  /* Prepare TCP socket for receiving connections */
     //Create socket
     socket_desc = socket(AF_INET , SOCK_STREAM , 0);
     if (socket_desc == -1)
@@ -156,9 +186,9 @@ int main()
     CHK_ERR(socket_desc, "socket");
     memset(&sa, 0, sizeof(sa));
     //Prepare the sockaddr_in structure
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons( 1131 );
+    sa.sin_family = AF_INET;
+    sa.sin_addr.s_addr = INADDR_ANY;
+    sa.sin_port = htons( 1131 );
      
     //Bind
     if( bind(socket_desc, (struct sockaddr*) &sa,sizeof(sa)) < 0)
@@ -168,70 +198,63 @@ int main()
         perror("bind failed. Error");
         return 1;
     }
+    CHK_ERR(err, "bind");
     syslog (LOG_NOTICE, "bind done");
     puts("bind done");
     //TODO: Insert daemon code here.
      //Listen
-    listen(socket_desc , 3); 
+    err = listen(socket_desc , 3);
+    CHK_ERR(err, "listen");
+    client_len = sizeof(sa_serv);
     //while (1)
     //{
- err = connect(socket_desc, (struct sockaddr*) &sa,sizeof(sa));                   
- CHK_ERR(err, "connect");
-
-  /* ----------------------------------------------- */
-  /* Now we have TCP conncetion. Start SSL negotiation. */
-  
-  ssl = SSL_new (ctx);                         
-  CHK_NULL(ssl);    
-  SSL_set_fd(ssl, socket_desc);
-  err = SSL_connect(ssl);                     
-  //CHK_SSL(err);
-    
-  /* Following two steps are optional and not required for
-     data exchange to be successful. */
-  
-  /* Get the cipher - opt */
-  char *chip;
-  sprintf (chip,"SSL connection using %s\n", SSL_get_cipher (ssl));
-  syslog (LOG_NOTICE, chip);
-  /* Get server's certificate (note: beware of dynamic allocation) - opt */
-
-  server_cert = SSL_get_peer_certificate (ssl);       
-  CHK_NULL(server_cert);
-  char *cert;
-  sprintf (cert,"Server certificate: %s\n",server_cert);
-  syslog (LOG_NOTICE, cert);
- /* 
-  str = X509_NAME_oneline (X509_get_subject_name (server_cert),0,0);
-  CHK_NULL(str);
-  char *subj;
-  sprintf (subj,"subject: %s\n", str);
-  syslog (LOG_NOTICE, subj);
-  OPENSSL_free (str);
-
-  str = X509_NAME_oneline (X509_get_issuer_name  (server_cert),0,0);
-  CHK_NULL(str);
-  char *issu;
-  sprintf (issu,"issuer: %s\n", str);
-  syslog (LOG_NOTICE, issu);
-  OPENSSL_free (str);
-*/
-  /* We could do all sorts of certificate verification stuff here before
-     deallocating the certificate. */
-
-  //X509_free (server_cert);
-  
+ 
   /* --------------------------------------------------- */
     //Accept and incoming connection
-    syslog (LOG_NOTICE, "Waiting for incoming connections...");
+    char *spex;
+    sprintf (spex,"Connection from %lx, port %x\nWaiting for incoming connections...\n",sa.sin_addr.s_addr, sa.sin_port);
+    syslog (LOG_NOTICE, spex);
     puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
-    while( (client_sock = SSL_accept(ssl) ))
+    while( (client_sock = accept(socket_desc, (struct sockaddr*) &sa_serv, &client_len ) ))
     {
-
+      CHK_ERR(socket_desc, "accept");
       syslog (LOG_NOTICE, "Connection accepted");
         puts("Connection accepted");
-         
+         ssl = SSL_new (ctx);                           
+	 CHK_NULL(ssl);
+  SSL_set_fd (ssl, socket_desc);
+  err = SSL_accept (ssl);                        
+  CHK_SSL(err);
+  
+  /* Get the cipher - opt */
+  
+  printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
+  
+  /* Get client's certificate (note: beware of dynamic allocation) - opt */
+
+  client_cert = SSL_get_peer_certificate (ssl);
+  if (client_cert != NULL) {
+    printf ("Client certificate:\n");
+    
+    str = X509_NAME_oneline (X509_get_subject_name (client_cert), 0, 0);
+    CHK_NULL(str);
+    printf ("\t subject: %s\n", str);
+    OPENSSL_free (str);
+    /*
+    str = X509_NAME_oneline (X509_get_issuer_name  (client_cert), 0, 0);
+    CHK_NULL(str);
+    printf ("\t issuer: %s\n", str);
+    OPENSSL_free (str);
+    */
+    /* We could do all sorts of certificate verification stuff here before
+       deallocating the certificate. */
+    
+    //X509_free (client_cert);
+  } else
+    printf ("Client does not have certificate.\n");
+
+  /* DATA EXCHANGE - Receive message and send reply. */
         pthread_t sniffer_thread;
         new_sock = (int*)malloc(1);
         *new_sock = client_sock;
@@ -416,8 +439,8 @@ void *connection_handler(void *socket_desc)
     close(sock);  
     //Free the socket pointer
     free(socket_desc);
-      SSL_free (ssl);
-      SSL_CTX_free (ctx);
+    SSL_free(ssl);
+    SSL_CTX_free(ctx);
       
     return 0;  
     //return 0;
