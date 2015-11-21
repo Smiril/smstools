@@ -27,16 +27,15 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <syslog.h>
-
+#include <openssl/crypto.h> // link with -lcrypto
+#include <openssl/tls1.h> 
+#include <openssl/x509.h> 
+#include <openssl/pem.h> 
+#include <openssl/ssl.h> // link with -lssl
+#include <openssl/err.h> 
+#include <fstream>
 
   #ifdef __linux__
-  #include <openssl/crypto.h> // link with -lcrypto
-  #include <openssl/tls1.h> 
-  #include <openssl/x509.h> 
-  #include <openssl/pem.h> 
-  #include <openssl/ssl.h> // link with -lssl
-  #include <openssl/err.h> 
-  #include <fstream>
   #include <security/pam_appl.h> // link with -lpam
   #include <termios.h>
   #include <unistd.h>
@@ -61,9 +60,9 @@
 #error "SDK not support your OS!"
 #endif
 /* Make these what you want for cert & key files */
-#define CERTF  HOME "ca.crt"
-#define KEYF  HOME  "ca.key"
-  
+#define CERTF	HOME	 "valid-root-ca.pem"
+#define KEYF	HOME	 "valid-root-cakey.pem"
+
   int err;
   int sd;
   int socket_desc;
@@ -177,11 +176,11 @@ int main()
   }
   
   if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
-    syslog (LOG_NOTICE, "No Certfile");
+    syslog (LOG_NOTICE, "No PEM Cert File");
     exit(3);
   }
   if (SSL_CTX_use_PrivateKey_file(ctx, KEYF, SSL_FILETYPE_PEM) <= 0) {
-    syslog (LOG_NOTICE, "No CertKeyfile");
+    syslog (LOG_NOTICE, "No PEM CertKey File");
     exit(4);
   }
 
@@ -238,13 +237,12 @@ int main()
     {
       CHK_ERR(client_sock, "accept");
       syslog (LOG_NOTICE, "Connection accepted");
-        puts("Connection accepted");
-         ssl = SSL_new (ctx);                           
-	 CHK_NULL(ssl);
-  SSL_set_fd (ssl, sd);
-  err = SSL_accept (ssl);                        
-  CHK_SSL(err);
-  
+      puts("Connection accepted");
+      ssl = SSL_new (ctx);
+      CHK_NULL(ssl);
+      SSL_set_fd (ssl, sd);
+      err = SSL_accept (ssl);
+      CHK_SSL(err);
   /* Get the cipher - opt */
   char *jessy0,*jessy1,*jessy2;
   sprintf (jessy0,"SSL connection using %s\n", SSL_get_cipher (ssl));
