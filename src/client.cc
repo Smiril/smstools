@@ -21,7 +21,7 @@
 #include <openssl/pem.h>
 #include <openssl/ssl.h> // link with -lssl
 #include <openssl/err.h>
-
+#define PATH_MAX        4096    /* # chars in a path name including nul */
 
 #define CHK_NULL(x) if ((x)==NULL) exit (1)
 #define CHK_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
@@ -38,7 +38,7 @@ int main(int argc , char *argv[])
   SSL*     ssl;
   X509*    server_cert;
   char*    str;
-  char     buf [4096];
+  char     buf [PATH_MAX];
   const SSL_METHOD *meth;
 
   OpenSSL_add_ssl_algorithms();
@@ -49,9 +49,8 @@ int main(int argc , char *argv[])
 
   /* ----------------------------------------------- */
   /* Create a socket and connect to server using normal socket calls. */
-    char message[1000] , server_reply[2000];
+    char message[PATH_MAX] , server_reply[PATH_MAX];
     int read_size;
-    std::string v2 = "VERSION";
     
     //Create socket
     sd = socket(AF_INET , SOCK_STREAM , 0);
