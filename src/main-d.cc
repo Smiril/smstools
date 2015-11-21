@@ -53,7 +53,7 @@
   #endif  
     
   /* define HOME to be dir for key and cert files... */
-#define HOME "/home/dv7/github/smstools/src/"
+#define HOME "/home/github/smstools/src/"
 /* Make these what you want for cert & key files */
 #define CERTF  HOME "ca.crt"
 #define KEYF  HOME  "ca.key"
@@ -223,7 +223,7 @@ int main()
     c = sizeof(struct sockaddr_in);
     while( (client_sock = accept(socket_desc, (struct sockaddr*) &sa_serv, &client_len ) ))
     {
-      CHK_ERR(socket_desc, "accept");
+      CHK_ERR(client_sock, "accept");
       syslog (LOG_NOTICE, "Connection accepted");
         puts("Connection accepted");
          ssl = SSL_new (ctx);                           
