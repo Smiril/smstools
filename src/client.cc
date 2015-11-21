@@ -32,7 +32,7 @@ using namespace std;
 
 int main(int argc , char *argv[])
 {
-    int err;
+  int err;
   int sd;
   struct sockaddr_in sa;
   SSL_CTX* ctx;
@@ -69,12 +69,12 @@ int main(int argc , char *argv[])
   
  
     //Connect to remote server
-    if ( connect(sd , (struct sockaddr *)&sa , sizeof(sa)) < 0)
+    if ( err = connect(sd , (struct sockaddr *)&sa , sizeof(sa)) < 0)
     {
         perror("connect failed. Error");
         return 1;
     }
-    //CHK_ERR(err, "connect"); 
+    CHK_ERR(err, "connect"); 
     puts("Connected");
 /* Now we have TCP conncetion. Start SSL negotiation. */
   
@@ -102,8 +102,9 @@ int main(int argc , char *argv[])
 	//PAM AUTH END
 	err = SSL_write (ssl, "43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n", strlen("43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n")); 
 	CHK_SSL(err);
+	printf("sending sms\n");
 	//send(sd , "43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n" , strlen("43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n") , 0);
-	printf("SMS SENT !\n");
+	
 	
 	
 	if(read_size == 0)
