@@ -93,15 +93,17 @@ int main(int argc , char *argv[])
 	// PAM AUTH USER DETAILS
 	err = SSL_write (ssl, "user", strlen("user")); 
 	CHK_SSL(err);
+	printf("sending username\n");
 	//send(sd , "user" , strlen("user") , 0);
 	err = SSL_write (ssl, "password", strlen("password")); 
 	CHK_SSL(err);
+	printf("sending password\n");
 	//send(sd , "password" , strlen("password") , 0);
 	//PAM AUTH END
 	err = SSL_write (ssl, "43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n", strlen("43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n")); 
 	CHK_SSL(err);
 	//send(sd , "43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n" , strlen("43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n") , 0);
-	printf("DATA SENT !\n");
+	printf("SMS SENT !\n");
 	
 	
 	if(read_size == 0)
