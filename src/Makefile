@@ -29,7 +29,7 @@ CXXFLAGS2 := -Wall -Wextra -pedantic \
 CXXFLAGS3 := -Wall -Wextra -pedantic \
         -Wno-variadic-macros \
         -DVERSION="\"$(VERSION3)\""
-CXXFLAGS4 := -Wall -Wextra -pedantic \
+CXXFLAGS4 := -lpthread -lpam -lcrypto -lssl -Wall -Wextra -pedantic \
         -Wno-variadic-macros \
         -DVERSION="\"$(VERSION4)\""
         
