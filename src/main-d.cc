@@ -1,6 +1,9 @@
 /*
  * daemonize.cc
  * This example daemonizes a process, writes a few log messages,
+ * Have ssl sockets and pam authentification,
+ * sending file to sms server quene directory
+ * exit thread and for finish running sequence:
  * sleeps 20 seconds and terminates afterwards.
  */
 #include <cstdlib>
@@ -28,11 +31,11 @@
 
   #ifdef __linux__
   #include <openssl/crypto.h> // link with -lcrypto
-  #include <openssl/tls1.h> // link with -lssl
-  #include <openssl/x509.h> // link with -lssl
-  #include <openssl/pem.h> // link with -lssl
+  #include <openssl/tls1.h> 
+  #include <openssl/x509.h> 
+  #include <openssl/pem.h> 
   #include <openssl/ssl.h> // link with -lssl
-  #include <openssl/err.h> // link with -lssl
+  #include <openssl/err.h> 
   #include <fstream>
   #include <security/pam_appl.h> // link with -lpam
   #include <termios.h>
@@ -65,7 +68,7 @@
   SSL*     ssl;
   X509*    client_cert;
   char*    str;
-  char     buf [4096];
+  char     buf [PATH_MAX];
   const SSL_METHOD *meth;
   
 #define CHK_NULL(x) if ((x)==NULL) exit (1)
