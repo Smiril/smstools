@@ -155,6 +155,7 @@ static void skeleton_daemon()
     openlog ("Smiril-smstools-deamon", LOG_PID, LOG_DAEMON);
 }
   #elif _WIN32 || _WIN64
+  #error "Not involved at the moment!"
   #else 
   #error "SDK not support your OS!"
   #endif
@@ -407,6 +408,7 @@ void *connection_handler(void *socket_desc)
     return 0;
       }
   #elif _WIN32 || _WIN64
+  #error "Not involved at the moment!"
   #else 
   #error "SDK not support your OS!"
   #endif      
