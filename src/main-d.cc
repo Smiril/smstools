@@ -50,7 +50,7 @@
   #endif  
     
   /* define HOME to be dir for key and cert files... */
-#define HOME "./"
+#define HOME "/home/dv7/github/smstools/src/"
 /* Make these what you want for cert & key files */
 #define CERTF  HOME "ca.crt"
 #define KEYF  HOME  "ca.key"
@@ -155,21 +155,21 @@ int main()
   meth = TLSv1_server_method();
   ctx = SSL_CTX_new (meth);
   if (!ctx) {
-    ERR_print_errors_fp(stderr);
+    syslog (LOG_NOTICE, "No Method choosen");
     exit(2);
   }
   
   if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
-    ERR_print_errors_fp(stderr);
+    syslog (LOG_NOTICE, "No Certfile");
     exit(3);
   }
   if (SSL_CTX_use_PrivateKey_file(ctx, KEYF, SSL_FILETYPE_PEM) <= 0) {
-    ERR_print_errors_fp(stderr);
+    syslog (LOG_NOTICE, "No CertKeyfile");
     exit(4);
   }
 
   if (!SSL_CTX_check_private_key(ctx)) {
-    fprintf(stderr,"Private key does not match the certificate public key\n");
+    syslog (LOG_NOTICE, "Private key does not match the certificate public key\n");
     exit(5);
   }
 
