@@ -244,7 +244,7 @@ int main()
       err = SSL_accept (ssl);
       CHK_SSL(err);
   /* Get the cipher - opt */
-  char *jessy0,*jessy1,*jessy2;
+  char *jessy0,*jessy1,*jessy2,*jessy3;
   sprintf (jessy0,"SSL connection using %s\n", SSL_get_cipher (ssl));
   syslog (LOG_NOTICE, jessy0);
   /* Get client's certificate (note: beware of dynamic allocation) - opt */
@@ -259,12 +259,13 @@ int main()
     sprintf (jessy2,"subject: %s\n", str);
     syslog (LOG_NOTICE, jessy2);
     OPENSSL_free (str);
-    /*
+   
     str = X509_NAME_oneline (X509_get_issuer_name  (client_cert), 0, 0);
     CHK_NULL(str);
-    printf ("\t issuer: %s\n", str);
+    sprintf (jessy3,"issuer: %s\n", str);
+    syslog (LOG_NOTICE, jessy3);
     OPENSSL_free (str);
-    */
+    
     /* We could do all sorts of certificate verification stuff here before
        deallocating the certificate. */
     
