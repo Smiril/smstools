@@ -27,11 +27,11 @@
 
 
   #ifdef __linux__
-  #include <openssl/crypto.h> // link with -lopenssl
-  #include <openssl/x509.h> // link with -lopenssl
-  #include <openssl/pem.h> // link with -lopenssl
-  #include <openssl/ssl.h> // link with -lopenssl
-  #include <openssl/err.h> // link with -lopenssl
+  #include <openssl/crypto.h> // link with -lcrypto
+  #include <openssl/x509.h> // link with -lssl
+  #include <openssl/pem.h> // link with -lssl
+  #include <openssl/ssl.h> // link with -lssl
+  #include <openssl/err.h> // link with -lssl
   #include <fstream>
   #include <security/pam_appl.h> // link with -lpam
   #include <termios.h>
