@@ -199,7 +199,7 @@ int main()
   server_cert = SSL_get_peer_certificate (ssl);       
   CHK_NULL(server_cert);
   char *cert;
-  sprintf (cert,"Server certificate:\n");
+  sprintf (cert,"Server certificate: %s\n",server_cert);
   syslog (LOG_NOTICE, cert);
  /* 
   str = X509_NAME_oneline (X509_get_subject_name (server_cert),0,0);
