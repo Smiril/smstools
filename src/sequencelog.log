@@ -1,5 +1,5 @@
 Nov 21 20:10:31 linux sudo:      github : TTY=pts/0 ; PWD=/home/github/smstools/src ; USER=root ; COMMAND=./smstools-deamon
-Nov 21 20:10:31 linux sudo: pam_unix(sudo:session): session opened for user root by dv7(uid=0)
+Nov 21 20:10:31 linux sudo: pam_unix(sudo:session): session opened for user root by github(uid=0)
 Nov 21 20:10:31 linux sudo: pam_unix(sudo:session): session closed for user root
 Nov 21 20:10:31 linux Smiril-smstools-deamon[17850]: Socket created
 Nov 21 20:10:31 linux Smiril-smstools-deamon[17850]: bind done
