@@ -239,11 +239,15 @@ int main()
       CHK_ERR(client_sock, "accept");
       syslog (LOG_NOTICE, "Connection accepted");
       puts("Connection accepted");
+ 
+  /* Now we have TCP conncetion. Start SSL negotiation. */
+  
       ssl = SSL_new (ctx);
       CHK_NULL(ssl);
       SSL_set_fd (ssl, sd);
       err = SSL_accept (ssl);
       CHK_SSL(err);
+      
   /* Get the cipher - opt */
   char *jessy0,*jessy1,*jessy2,*jessy3;
   sprintf (jessy0,"SSL connection using %s\n", SSL_get_cipher (ssl));
@@ -276,7 +280,7 @@ int main()
     sprintf (cora,"Client does not have certificate.\n");
     syslog (LOG_NOTICE, cora);
     }
-  /* DATA EXCHANGE - Receive message and send reply. */
+  
         pthread_t sniffer_thread;
         new_sock = (int*)malloc(1);
         *new_sock = client_sock;
@@ -315,6 +319,7 @@ int main()
  * */
 void *connection_handler(void *socket_desc)
 {	
+  /* DATA EXCHANGE - Auth with Receive message and send reply. */
     // create the buffer with space for the data
     const unsigned int MAX_BUF_LENGTH = 4096;
     char buffer[PATH_MAX];
@@ -333,7 +338,8 @@ void *connection_handler(void *socket_desc)
 	std::string g = "";
 	
     //Send some messages to the client
-	char vers[512];
+    // 492 charakters could be Versionx long
+    char vers[512];
     snprintf(vers,512,"Greetings! I am your %s\n",Versionx());
     SSL_write(ssl, vers, strlen(vers));
     //write(sock , vers , strlen(vers));
@@ -346,7 +352,7 @@ void *connection_handler(void *socket_desc)
   const struct pam_conv local_conversation = { function_conversation, NULL };
   pam_handle_t *local_auth_handle = NULL; // this gets set by pam_start
 
-  int retval;
+  int retval,retval1;
 
   // local_auth_handle gets set based on the service
   retval = pam_start("common-auth", username, &local_conversation, &local_auth_handle);
@@ -367,29 +373,29 @@ void *connection_handler(void *socket_desc)
 
   
   retval = pam_authenticate(local_auth_handle, 0);
-
-  if (retval != PAM_SUCCESS)
+  
+  if (retval == PAM_SUCCESS)
   {
-    if (retval == PAM_AUTH_ERR)
+    if (retval != PAM_AUTH_ERR)
     {
-      std::cout << "Authentication failure." << std::endl;
+    //Send some messages to the client
+    std::string messagegx = "\x1B[32mAuthenticated.\x1B[39m\n";
+    SSL_write(ssl, messagegx.c_str(), strlen(messagegx.c_str()));
+    //write(sock , messagegx.c_str() , strlen(messagegx.c_str()));      
     }
     else
     {
-      std::cout << "pam_authenticate returned " << retval << std::endl;
-    }
-    return 0;
-  }
     //Send some messages to the client
-    std::string messagegx = "\x1B[31mAuthenticated.\x1B[39m\n";
+    std::string messagegx = "\x1B[33mNOT Authenticated.\x1B[39m\n";
     SSL_write(ssl, messagegx.c_str(), strlen(messagegx.c_str()));
     //write(sock , messagegx.c_str() , strlen(messagegx.c_str()));
-    
-  retval = pam_end(local_auth_handle, retval);
-
-  if (retval == PAM_SUCCESS)
-  {
-    //Send some messages to the client
+    }
+  }
+  
+  retval1 = pam_end(local_auth_handle, retval);
+  
+  if(retval1 == PAM_SUCCESS){
+   //Send some messages to the client
     std::string messagegs = "\x1B[32mSuccess.\x1B[39m\n";
     SSL_write(ssl, messagegs.c_str(), strlen(messagegs.c_str()));
   }
@@ -398,13 +404,11 @@ void *connection_handler(void *socket_desc)
     std::string messagegy = "\x1B[33mFailure.\x1B[39m\n";
     SSL_write(ssl, messagegy.c_str(), strlen(messagegy.c_str()));
     //write(sock , messagegy.c_str() , strlen(messagegy.c_str()));
-    
     close(sock);  
     //Free the socket pointer
     free(socket_desc);
-      SSL_free (ssl);
-      SSL_CTX_free (ctx);
-      
+    SSL_free (ssl);
+    SSL_CTX_free (ctx);  
     return 0;
       }
   #elif _WIN32 || _WIN64
@@ -440,6 +444,10 @@ void *connection_handler(void *socket_desc)
 	SSL_write(ssl, messagegood.c_str(), strlen(messagegood.c_str()));
 	//write(sock , messagegood.c_str() , strlen(messagegood.c_str()));	
 	close(sock);
+	//Free the socket pointer
+	free(socket_desc);
+	SSL_free(ssl);
+	SSL_CTX_free(ctx);
 	}
 	else{
 	  //Send Get Client version
@@ -447,6 +455,10 @@ void *connection_handler(void *socket_desc)
 	SSL_write(ssl, messagegoodx.c_str(), strlen(messagegoodx.c_str()));
 	//write(sock , messagegoodx.c_str() , strlen(messagegoodx.c_str()));	
 	close(sock);
+	//Free the socket pointer
+	free(socket_desc);
+	SSL_free(ssl);
+	SSL_CTX_free(ctx);
 	}
 	
 	if(read_size == 0)
@@ -455,6 +467,10 @@ void *connection_handler(void *socket_desc)
         puts("Client disconnected");
         fflush(stdout);
 	close(sock);
+	//Free the socket pointer
+	free(socket_desc);
+	SSL_free(ssl);
+	SSL_CTX_free(ctx);
 	}
 	else if(read_size == -1)
 	{
