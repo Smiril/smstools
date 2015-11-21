@@ -1,6 +1,7 @@
 /*
-    C ECHO client example using sockets
-    TODO write ssl socket code openssl based
+    C ECHO client example using sslsockets
+    sending some strings for auth and message
+    TLS SSL Auth Mechamism is used for this
 */
 #include <stdio.h> //printf
 #include <string.h>    //strlen
@@ -90,14 +91,14 @@ int main(int argc , char *argv[])
 	CHK_SSL(read_size);
 	printf("%s",server_reply);
 	// PAM AUTH USER DETAILS
-	SSL_write (ssl, "user", strlen("user")); 
+	err = SSL_write (ssl, "user", strlen("user")); 
 	CHK_SSL(err);
 	//send(sd , "user" , strlen("user") , 0);
-	SSL_write (ssl, "password", strlen("password")); 
+	err = SSL_write (ssl, "password", strlen("password")); 
 	CHK_SSL(err);
 	//send(sd , "password" , strlen("password") , 0);
 	//PAM AUTH END
-	SSL_write (ssl, "43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n", strlen("43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n")); 
+	err = SSL_write (ssl, "43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n", strlen("43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n")); 
 	CHK_SSL(err);
 	//send(sd , "43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n" , strlen("43676xxxxxxx,43676xxxxxxx\ntest message\ny\ny\nn\n") , 0);
 	printf("DATA SENT !\n");
