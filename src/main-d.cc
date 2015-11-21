@@ -27,6 +27,7 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <syslog.h>
+#include <openssl/rsa.h>
 #include <openssl/crypto.h> // link with -lcrypto
 #include <openssl/tls1.h> 
 #include <openssl/x509.h> 
@@ -579,5 +580,4 @@ void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::st
       } // while end
       } // for end
 }
-
 
