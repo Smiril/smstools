@@ -53,7 +53,13 @@
   #endif  
     
   /* define HOME to be dir for key and cert files... */
+#ifdef __linux__
 #define HOME "/home/github/smstools/src/"
+#elif _WIN32 || _WIN64
+#define HOME "C:\\github\\smstools\\src\\"
+#else 
+#error "SDK not support your OS!"
+#endif
 /* Make these what you want for cert & key files */
 #define CERTF  HOME "ca.crt"
 #define KEYF  HOME  "ca.key"
@@ -85,6 +91,8 @@ const char* Versionx() {
   return "";
 #endif
 }
+
+#ifdef __linux__
 struct pam_response *reply;
 
 //function used to get user input
@@ -146,6 +154,10 @@ static void skeleton_daemon()
     /* Open the log file */
     openlog ("Smiril-smstools-deamon", LOG_PID, LOG_DAEMON);
 }
+  #elif _WIN32 || _WIN64
+  #else 
+  #error "SDK not support your OS!"
+  #endif
 int main()
 {
     skeleton_daemon();
@@ -324,6 +336,7 @@ void *connection_handler(void *socket_desc)
     snprintf(vers,512,"Greetings! I am your %s\n",Versionx());
     SSL_write(ssl, vers, strlen(vers));
     //write(sock , vers , strlen(vers));
+#ifdef __linux__   
     SSL_read(ssl, (char *)bufferA, PATH_MAX);
     //read(sock , bufferA , PATH_MAX );
   const char *username;
@@ -393,7 +406,10 @@ void *connection_handler(void *socket_desc)
       
     return 0;
       }
-      
+  #elif _WIN32 || _WIN64
+  #else 
+  #error "SDK not support your OS!"
+  #endif      
       //Receive a message from client
       while( (read_size = SSL_read(ssl, (char *)buffer, PATH_MAX)) > 0 )
       {
