@@ -92,7 +92,7 @@ version:
 	@echo $(VERSION2)
 	@echo $(VERSION1)
 
-install: getsms smstools3 smstools3-gtk
+install: getsms smstools3 smstools3-gtk smstools-deamon
 	mkdir -p $(PREFIX)
 	cp smstools $(PREFIX)
 	chmod +x $(PREFIX)/smstools
@@ -100,14 +100,14 @@ install: getsms smstools3 smstools3-gtk
 	chmod +x $(PREFIX)/smstools-gtk
 	cp getsms $(PREFIX)
 	chmod +x $(PREFIX)/getsms
-	cp smstools-deamon /usr/local/bin/ 
-	chmod +x /usr/local/bin/smstools-deamon
+	cp smstools-deamon $(PREFIX) 
+	chmod +x $(PREFIX)/smstools-deamon
 	
 uninstall: 
 	rm -rf $(PREFIX)/smstools-gtk
 	rm -rf $(PREFIX)/smstools
 	rm -rf $(PREFIX)/getsms
-	rm -rf /usr/local/bin/smstools-deamon
+	rm -rf $(PREFIX)/smstools-deamon
 clean: 
 	rm -rf smstools-deamon
 	rm -rf smstools-gtk
