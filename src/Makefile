@@ -33,14 +33,14 @@ CXXFLAGS4 := -lpthread -lpam -lcrypto -lssl -Wall -Wextra -pedantic \
         -Wno-variadic-macros \
         -DVERSION="\"$(VERSION4)\""
         
-.PHONY: all smsdeamon smstools3 debug-smstools3 smstools3-gtk debug-smstools3-gtk debug-W32smstools W32smstools x64smstools debug-x64smstools debug-W32smstools-gtk W32smstools-gtk x64smstools-gtk debug-x64smstools-gtk debug-W32getsms x64getsms debug-x64getsms W32getsms getsms debug-getsms install uninstall clean version
+.PHONY: all smstools-deamon smstools3 debug-smstools3 smstools3-gtk debug-smstools3-gtk debug-W32smstools W32smstools x64smstools debug-x64smstools debug-W32smstools-gtk W32smstools-gtk x64smstools-gtk debug-x64smstools-gtk debug-W32getsms x64getsms debug-x64getsms W32getsms getsms debug-getsms install uninstall clean version
 
 all: smstools3 smstools3-gtk getsms smsdeamon 
 smsdeamon: main-d.cc	
-	$(CXX) main-d.cc $(CXXFLAGS4) -o smsdeamon -lpthread
+	$(CXX) main-d.cc $(CXXFLAGS4) -o smstools-deamon
 debug-smsdeamon: CXXFLAGS4 += -g -DDEBUG
 debug-smsdeamon: main-d.cc
-	$(CXX) $(CXXFLAGS4) main-d.cc -o debug-smsdeamon -lpthread
+	$(CXX) $(CXXFLAGS4) main-d.cc -o debug-smstools-deamon
 smstools3: main-c.cc	
 	$(CXX) main-c.cc $(CXXFLAGS1) -o smstools 
 debug-smstools3: CXXFLAGS1 += -g -DDEBUG
@@ -100,16 +100,16 @@ install: getsms smstools3 smstools3-gtk
 	chmod +x $(PREFIX)/smstools-gtk
 	cp getsms $(PREFIX)
 	chmod +x $(PREFIX)/getsms
-	cp smsdeamon /usr/local/bin/ 
-	chmod +x /usr/local/bin/smsdeamon
+	cp smstools-deamon /usr/local/bin/ 
+	chmod +x /usr/local/bin/smstools-deamon
 	
 uninstall: 
 	rm -rf $(PREFIX)/smstools-gtk
 	rm -rf $(PREFIX)/smstools
 	rm -rf $(PREFIX)/getsms
-	rm -rf /usr/local/bin/smsdeamon
+	rm -rf /usr/local/bin/smstools-deamon
 clean: 
-	rm -rf smsdeamon
+	rm -rf smstools-deamon
 	rm -rf smstools-gtk
 	rm -rf smstools
 	rm -rf getsms
