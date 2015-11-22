@@ -44,9 +44,9 @@
 #endif
 
 /* Make these what you want for cert & key files */
-// openssl req -x509 -days 365 -nodes -newkey rsa:1024 -keyout valid-root-cakey.pem -out valid-root-ca.pem
-#define CERTF	HOME	 "valid-root-ca.pem"
-#define KEYF	HOME	 "valid-root-cakey.pem"
+// openssl req -x509 -days 365 -nodes -newkey rsa:1024 -keyout valid-client-cakey.pem -out valid-client-ca.pem
+#define CERTF	HOME	 "valid-client-ca.pem"
+#define KEYF	HOME	 "valid-client-cakey.pem"
 
 using namespace std;
 
