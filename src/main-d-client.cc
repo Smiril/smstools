@@ -58,23 +58,20 @@ int main(int argc , char *argv[])
 
     /* ----------------------------------------------- */
     /* Create a socket and connect to server using normal socket calls. */
-
-    
     //Create socket
     sd = socket(AF_INET , SOCK_STREAM , 0);
     if (sd == -1)
     {
         printf("Could not create socket");
     }
-    puts("Socket created");
     CHK_ERR(sd, "socket");
- 
+    puts("Socket created");
+    
     memset(&sa, 0, sizeof(sa)); 
     sa.sin_addr.s_addr = inet_addr("127.0.0.1");
     sa.sin_family = AF_INET;
     sa.sin_port = htons( 1131 );              
   
- 
     //Connect to remote server
     if ( err = connect(sd , (struct sockaddr *)&sa , sizeof(sa)) < 0)
     {
@@ -85,12 +82,39 @@ int main(int argc , char *argv[])
     puts("Connected");
     
     /* Now we have TCP conncetion. Start SSL negotiation. */
-  
     ssl = SSL_new(ctx);                         
     CHK_NULL(ssl);    
     SSL_set_fd(ssl, sd);
     err = SSL_connect(ssl);                    
     CHK_SSL(err);
+    
+    /* Get the cipher - opt */
+
+    printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
+  
+  /* Get server's certificate (note: beware of dynamic allocation) - opt */
+
+    server_cert = SSL_get_peer_certificate (ssl);       
+    CHK_NULL(server_cert);
+    printf ("Server certificate:\n");
+  
+    str = X509_NAME_oneline (X509_get_subject_name (server_cert),0,0);
+    CHK_NULL(str);
+    printf ("\t subject: %s\n", str);
+    OPENSSL_free (str);
+
+    str = X509_NAME_oneline (X509_get_issuer_name (server_cert),0,0);
+    CHK_NULL(str);
+    printf ("\t issuer: %s\n", str);
+    OPENSSL_free (str);
+
+  /* We could do all sorts of certificate verification stuff here before
+     deallocating the certificate. */
+
+    X509_free (server_cert);
+  
+  /* --------------------------------------------------- */
+  /* DATA EXCHANGE - Send a message and receive a reply. */
   
     while(read_size = SSL_read(ssl, server_reply, sizeof(server_reply) ) > 0){
 	
@@ -121,7 +145,6 @@ int main(int argc , char *argv[])
         perror("recv failed");
 	}
     } //while recv end
-
     close(sd);
     SSL_free(ssl);
     SSL_CTX_free(ctx);
