@@ -19,7 +19,6 @@
 #include <iostream>
 #include <cstring>
 #include <memory>
-#include <errno.h>
 #include <sstream>
 #include <openssl/rsa.h>
 #include <openssl/crypto.h> // link with -lcrypto
@@ -28,6 +27,7 @@
 #include <openssl/pem.h>
 #include <openssl/ssl.h> // link with -lssl
 #include <openssl/err.h>
+
 #define PATH_MAX        4096    /* # chars in a path name including nul */
 
 #define CHK_NULL(x) if ((x)==NULL) exit (1)
@@ -38,26 +38,26 @@ using namespace std;
 
 int main(int argc , char *argv[])
 {
-  int err;
-  int sd;
-  int read_size;
-  struct sockaddr_in sa;
-  SSL_CTX* ctx;
-  SSL*     ssl;
-  X509*    server_cert;
-  char*    str;
-  char     buf [PATH_MAX];
-  char 	   server_reply[PATH_MAX];
-  const SSL_METHOD *meth;
+    int err;
+    int sd;
+    int read_size;
+    struct sockaddr_in sa;
+    SSL_CTX* ctx;
+    SSL*     ssl;
+    X509*    server_cert;
+    char*    str;
+    char     buf [PATH_MAX];
+    char     server_reply[PATH_MAX];
+    const SSL_METHOD *meth;
 
-  OpenSSL_add_ssl_algorithms();
-  meth = TLSv1_client_method();
-  SSL_load_error_strings();
-  ctx = SSL_CTX_new (meth);                        
-  CHK_NULL(ctx);
+    OpenSSL_add_ssl_algorithms();
+    meth = TLSv1_client_method();
+    SSL_load_error_strings();
+    ctx = SSL_CTX_new (meth);                        
+    CHK_NULL(ctx);
 
-  /* ----------------------------------------------- */
-  /* Create a socket and connect to server using normal socket calls. */
+    /* ----------------------------------------------- */
+    /* Create a socket and connect to server using normal socket calls. */
 
     
     //Create socket
@@ -83,16 +83,14 @@ int main(int argc , char *argv[])
     }
     CHK_ERR(err, "connect"); 
     puts("Connected");
-/* Now we have TCP conncetion. Start SSL negotiation. */
-  
-  ssl = SSL_new (ctx);                         
-  CHK_NULL(ssl);    
-  SSL_set_fd (ssl, sd);
-  err = SSL_connect (ssl);                    
-  CHK_SSL(err);
     
-  /* Following two steps are optional and not required for
-     data exchange to be successful. */
+    /* Now we have TCP conncetion. Start SSL negotiation. */
+  
+    ssl = SSL_new(ctx);                         
+    CHK_NULL(ssl);    
+    SSL_set_fd(ssl, sd);
+    err = SSL_connect(ssl);                    
+    CHK_SSL(err);
   
     while(read_size = SSL_read(ssl, server_reply, sizeof(server_reply) ) > 0){
 	
@@ -116,7 +114,6 @@ int main(int argc , char *argv[])
 	if(read_size == 0)
 	{
         printf("Server disconnect's");
-        //fflush(stdout);
 	break;
 	}
 	else if(read_size == -1)
