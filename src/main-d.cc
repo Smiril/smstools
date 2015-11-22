@@ -23,7 +23,6 @@
 #include <signal.h>
 #include <cstring>
 #include <memory>
-#include <errno.h>
 #include <sstream>
 #include <sys/stat.h>
 #include <syslog.h>
@@ -56,11 +55,12 @@
 #ifdef __linux__
 #define HOME "/home/github/smstools/src/"
 #elif _WIN32 || _WIN64
-#define HOME "C:\\github\\smstools\\src\\"
+#define HOME "C:\\Users\\github\\smstools\\src\\"
 #else 
 #error "SDK not support your OS!"
 #endif
 /* Make these what you want for cert & key files */
+// openssl req -x509 -days 365 -nodes -newkey rsa:1024 -keyout valid-root-cakey.pem -out valid-root-ca.pem
 #define CERTF	HOME	 "valid-root-ca.pem"
 #define KEYF	HOME	 "valid-root-cakey.pem"
 
@@ -389,6 +389,12 @@ void *connection_handler(void *socket_desc)
     std::string messagegx = "\x1B[33mNOT Authenticated.\x1B[39m\n";
     SSL_write(ssl, messagegx.c_str(), strlen(messagegx.c_str()));
     //write(sock , messagegx.c_str() , strlen(messagegx.c_str()));
+    close(sock);  
+    //Free the socket pointer
+    free(socket_desc);
+    SSL_free (ssl);
+    SSL_CTX_free (ctx); 
+    return 0;
     }
   }
   
@@ -485,15 +491,12 @@ void *connection_handler(void *socket_desc)
     SSL_free(ssl);
     SSL_CTX_free(ctx);
       
-    return 0;  
-    //return 0;
+    return 0; 
 }
 
 void sendsms(std::string a1,std::string b1,std::string dx,std::string dd,std::string dc)
 {     
       const char *pch;
-      char *value; 
-      long ret;
       
       pch = strtok ((char *)a1.c_str(),",");
       
