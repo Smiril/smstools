@@ -34,6 +34,20 @@
 #define CHK_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
 #define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(2); }
 
+  /* define HOME to be dir for key and cert files... */
+#ifdef __linux__
+#define HOME "/home/github/smstools/src/"
+#elif _WIN32 || _WIN64
+#define HOME "C:\\Users\\github\\smstools\\src\\"
+#else 
+#error "SDK not support your OS!"
+#endif
+
+/* Make these what you want for cert & key files */
+// openssl req -x509 -days 365 -nodes -newkey rsa:1024 -keyout valid-root-cakey.pem -out valid-root-ca.pem
+#define CERTF	HOME	 "valid-root-ca.pem"
+#define KEYF	HOME	 "valid-root-cakey.pem"
+
 using namespace std;
 
 int main(int argc , char *argv[])
@@ -50,12 +64,27 @@ int main(int argc , char *argv[])
     char     server_reply[PATH_MAX];
     const SSL_METHOD *meth;
 
+    SSL_load_error_strings();
     OpenSSL_add_ssl_algorithms();
     meth = TLSv1_client_method();
-    SSL_load_error_strings();
     ctx = SSL_CTX_new (meth);                        
     CHK_NULL(ctx);
-
+    if (!ctx) {
+    printf("There's NO Crypto Method choosen\n");
+    exit(2);
+    }
+    if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
+    printf("PEM Cert File is NOT Valid\n");
+    exit(3);
+    }
+    if (SSL_CTX_use_PrivateKey_file(ctx, KEYF, SSL_FILETYPE_PEM) <= 0) {
+    printf("PEM CertKey File is NOT Valid\n");
+    exit(4);
+    }
+    if (!SSL_CTX_check_private_key(ctx)) {
+    printf("Private key does not match the certificate public key\n");
+    exit(5);
+    }
     /* ----------------------------------------------- */
     /* Create a socket and connect to server using normal socket calls. */
     //Create socket
@@ -71,7 +100,7 @@ int main(int argc , char *argv[])
     sa.sin_addr.s_addr = inet_addr("127.0.0.1");
     sa.sin_family = AF_INET;
     sa.sin_port = htons( 1131 );              
-  
+
     //Connect to remote server
     if ( err = connect(sd , (struct sockaddr *)&sa , sizeof(sa)) < 0)
     {
