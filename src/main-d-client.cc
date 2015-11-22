@@ -36,7 +36,7 @@
 
   /* define HOME to be dir for key and cert files... */
 #ifdef __linux__
-#define HOME "/home/github/smstools/src/"
+#define HOME "/home/dv7/github/smstools/src/"
 #elif _WIN32 || _WIN64
 #define HOME "C:\\Users\\github\\smstools\\src\\"
 #else 
@@ -52,6 +52,12 @@ using namespace std;
 
 int main(int argc , char *argv[])
 {
+  if (argv[1] == 0){ // argv[1] should be 0 for correct execution
+    // We print argv[0] assuming it is the program name
+    cout<<"usage: "<< argv[0] <<" 127.0.0.1\n";
+    exit(1);
+  }
+    const char *serv = argv[1];
     int err;
     int sd;
     int read_size;
@@ -69,6 +75,8 @@ int main(int argc , char *argv[])
     meth = TLSv1_client_method();
     ctx = SSL_CTX_new (meth);                        
     CHK_NULL(ctx);
+    /* ----------------------------------------------- */
+    /* Load and use CERTF and KEYF for encrypt the connection */
     if (!ctx) {
     printf("There's NO Crypto Method choosen\n");
     exit(2);
@@ -97,7 +105,7 @@ int main(int argc , char *argv[])
     puts("Socket created");
     
     memset(&sa, 0, sizeof(sa)); 
-    sa.sin_addr.s_addr = inet_addr("127.0.0.1");
+    sa.sin_addr.s_addr = inet_addr(serv);
     sa.sin_family = AF_INET;
     sa.sin_port = htons( 1131 );              
 
@@ -177,5 +185,6 @@ int main(int argc , char *argv[])
     close(sd);
     SSL_free(ssl);
     SSL_CTX_free(ctx);
+    
     return 0;
 }
