@@ -53,9 +53,9 @@
     
   /* define HOME to be dir for key and cert files... */
 #ifdef __linux__
-#define HOME "/home/github/smstools/src/"
+#define HOME "/etc/smstools/ca/"
 #elif _WIN32 || _WIN64
-#define HOME "C:\\Users\\github\\smstools\\src\\"
+#define HOME "C:\\Users\\github\\smstools\\ca\\"
 #else 
 #error "SDK not support your OS!"
 #endif
@@ -75,6 +75,8 @@
   X509*    client_cert;
   char*    str;
   char     buf [PATH_MAX];
+  char 	   *jessy0,*jessy1,*jessy2,*jessy3;
+  char 	   *cora;
   const SSL_METHOD *meth;
   
 #define CHK_NULL(x) if ((x)==NULL) exit (1)
@@ -163,8 +165,8 @@ int main()
 {
     skeleton_daemon();
     
-     int client_sock , c , *new_sock;
-    struct sockaddr_in server , client;
+     int client_sock , *new_sock;
+
   /* SSL preliminaries. We keep the certificate and key with the context. */
 
   SSL_load_error_strings();
@@ -233,7 +235,6 @@ int main()
     //sprintf (spex,"Connection from %lx, port %x\nWaiting for incoming connections...\n",sa.sin_addr.s_addr, sa.sin_port);
     syslog (LOG_NOTICE, "Waiting for incoming connections...");
     puts("Waiting for incoming connections...");
-    c = sizeof(struct sockaddr_in);
     while( (client_sock = accept(socket_desc, (struct sockaddr*) &sa_serv, &client_len ) ))
     {
       CHK_ERR(client_sock, "accept");
@@ -249,36 +250,36 @@ int main()
       CHK_SSL(err);
       
   /* Get the cipher - opt */
-  char *jessy0,*jessy1,*jessy2,*jessy3;
-  sprintf (jessy0,"SSL connection using %s\n", SSL_get_cipher (ssl));
-  syslog (LOG_NOTICE, jessy0);
+  
+  snprintf(jessy0,512,"SSL connection using %s\n", SSL_get_cipher (ssl));
+  syslog(LOG_NOTICE, jessy0);
   /* Get client's certificate (note: beware of dynamic allocation) - opt */
 
-  client_cert = SSL_get_peer_certificate (ssl);
+  client_cert = SSL_get_peer_certificate(ssl);
   if (client_cert != NULL) {
-    sprintf (jessy1,"Client certificate: %s\n",client_cert);
-    syslog (LOG_NOTICE, jessy1);
+    snprintf(jessy1,512,"Client certificate: \n");
+    syslog(LOG_NOTICE, jessy1);
     
-    str = X509_NAME_oneline (X509_get_subject_name (client_cert), 0, 0);
+    str = X509_NAME_oneline (X509_get_subject_name(client_cert), 0, 0);
     CHK_NULL(str);
-    sprintf (jessy2,"subject: %s\n", str);
-    syslog (LOG_NOTICE, jessy2);
-    OPENSSL_free (str);
+    snprintf(jessy2,512,"subject: %s\n", str);
+    syslog(LOG_NOTICE, jessy2);
+    OPENSSL_free(str);
    
-    str = X509_NAME_oneline (X509_get_issuer_name  (client_cert), 0, 0);
+    str = X509_NAME_oneline (X509_get_issuer_name(client_cert), 0, 0);
     CHK_NULL(str);
-    sprintf (jessy3,"issuer: %s\n", str);
-    syslog (LOG_NOTICE, jessy3);
-    OPENSSL_free (str);
+    snprintf(jessy3,512,"issuer: %s\n", str);
+    syslog(LOG_NOTICE, jessy3);
+    OPENSSL_free(str);
     
     /* We could do all sorts of certificate verification stuff here before
        deallocating the certificate. */
     
-    X509_free (client_cert);
+    X509_free(client_cert);
   } else{
-    char *cora;
-    sprintf (cora,"Client does not have certificate.\n");
-    syslog (LOG_NOTICE, cora);
+    
+    snprintf(cora,512,"Client does not have certificate.\n");
+    syslog(LOG_NOTICE, cora);
     }
   
         pthread_t sniffer_thread;
@@ -321,15 +322,12 @@ void *connection_handler(void *socket_desc)
 {	
   /* DATA EXCHANGE - Auth with Receive message and send reply. */
     // create the buffer with space for the data
-    const unsigned int MAX_BUF_LENGTH = 4096;
     char buffer[PATH_MAX];
     char bufferA[PATH_MAX];
     char bufferB[PATH_MAX];
     //Get the socket descriptor
     int sock = *(int*)socket_desc;
     int read_size;
-    
-    char *message , client_message[PATH_MAX];
     
     	std::string a = "";
 	std::string b = "";
@@ -428,7 +426,7 @@ void *connection_handler(void *socket_desc)
 	syslog (LOG_NOTICE, buffer);
 	// number
 	char *hx0 = strtok(buffer,"\n"); 
-	if(hx0 != "0"){
+	if(hx0 != 0){
 	a = hx0;
 	// number
 	// message
