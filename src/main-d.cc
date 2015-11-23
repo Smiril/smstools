@@ -51,18 +51,19 @@
   #error "SDK not support your OS!"
   #endif  
     
-  /* define HOME to be dir for key and cert files... */
-#ifdef __linux__
-#define HOME "/etc/smstools/ca/"
-#elif _WIN32 || _WIN64
-#define HOME "C:\\Users\\github\\smstools\\ca\\"
-#else 
-#error "SDK not support your OS!"
-#endif
-/* Make these what you want for cert & key files */
-// openssl req -x509 -days 365 -nodes -newkey rsa:1024 -keyout valid-root-cakey.pem -out valid-root-ca.pem
-#define CERTF	HOME	 "valid-root-ca.pem"
-#define KEYF	HOME	 "valid-root-cakey.pem"
+    /* define HOME to be dir for key and cert files... */
+  #ifdef __linux__
+  #define HOME "/etc/smstools/ca/"
+  #elif _WIN32 || _WIN64
+  #define HOME "C:\\Users\\github\\smstools\\ca\\"
+  #else 
+  #error "SDK not support your OS!"
+  #endif
+
+  /* Make these what you want for cert & key files */
+  // openssl req -x509 -days 365 -nodes -newkey rsa:1024 -keyout valid-root-cakey.pem -out valid-root-ca.pem
+  #define CERTF	HOME	 "valid-root-ca.pem"
+  #define KEYF	HOME	 "valid-root-cakey.pem"
 
   int err;
   int sd;
@@ -178,18 +179,24 @@ int main()
     exit(2);
   }
   
-  if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
-    syslog (LOG_NOTICE, "PEM Cert File is NOT Valid\n");
+  if (SSL_CTX_load_verify_locations(ctx,CERTF,HOME) <= 0) {
+    syslog (LOG_NOTICE, "Verify of the Cert FAILED!\n");
     exit(3);
   }
+  
+  if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
+    syslog (LOG_NOTICE, "PEM Cert File is NOT Valid\n");
+    exit(4);
+  }
+  
   if (SSL_CTX_use_PrivateKey_file(ctx, KEYF, SSL_FILETYPE_PEM) <= 0) {
     syslog (LOG_NOTICE, "PEM CertKey File is NOT Valid\n");
-    exit(4);
+    exit(5);
   }
 
   if (!SSL_CTX_check_private_key(ctx)) {
     syslog (LOG_NOTICE, "Private key does not match the certificate public key\n");
-    exit(5);
+    exit(6);
   }
 
   /* ----------------------------------------------- */
@@ -231,10 +238,8 @@ int main()
  
   /* --------------------------------------------------- */
     //Accept and incoming connection
-    //char *spex;
-    //sprintf (spex,"Connection from %lx, port %x\nWaiting for incoming connections...\n",sa.sin_addr.s_addr, sa.sin_port);
-    syslog (LOG_NOTICE, "Waiting for incoming connections...");
-    puts("Waiting for incoming connections...");
+    syslog (LOG_NOTICE, "Waiting for Connections ...");
+    puts("Waiting for Connections ...");
     while( (client_sock = accept(socket_desc, (struct sockaddr*) &sa_serv, &client_len ) ))
     {
       CHK_ERR(client_sock, "accept");
@@ -243,43 +248,44 @@ int main()
  
   /* Now we have TCP conncetion. Start SSL negotiation. */
   
-      ssl = SSL_new (ctx);
+      ssl = SSL_new(ctx);
       CHK_NULL(ssl);
-      SSL_set_fd (ssl, sd);
-      err = SSL_accept (ssl);
+      SSL_set_fd(ssl, sd);
+      err = SSL_accept(ssl);
       CHK_SSL(err);
       
   /* Get the cipher - opt */
   
-  snprintf(jessy0,512,"SSL connection using %s\n", SSL_get_cipher (ssl));
-  syslog(LOG_NOTICE, jessy0);
+     snprintf(jessy0,512,"SSL connection using %s\n", SSL_get_cipher (ssl));
+     syslog(LOG_NOTICE, jessy0);
+
   /* Get client's certificate (note: beware of dynamic allocation) - opt */
 
-  client_cert = SSL_get_peer_certificate(ssl);
-  if (client_cert != NULL) {
-    snprintf(jessy1,512,"Client certificate: \n");
-    syslog(LOG_NOTICE, jessy1);
+     client_cert = SSL_get_peer_certificate(ssl);
     
-    str = X509_NAME_oneline (X509_get_subject_name(client_cert), 0, 0);
-    CHK_NULL(str);
-    snprintf(jessy2,512,"subject: %s\n", str);
-    syslog(LOG_NOTICE, jessy2);
-    OPENSSL_free(str);
+     if (client_cert != NULL) {
+     snprintf(jessy1,512,"Client certificate: \n");
+     syslog(LOG_NOTICE, jessy1);
+    
+     str = X509_NAME_oneline (X509_get_subject_name(client_cert), 0, 0);
+     CHK_NULL(str);
+     snprintf(jessy2,512,"subject: %s\n", str);
+     syslog(LOG_NOTICE, jessy2);
+     OPENSSL_free(str);
    
-    str = X509_NAME_oneline (X509_get_issuer_name(client_cert), 0, 0);
-    CHK_NULL(str);
-    snprintf(jessy3,512,"issuer: %s\n", str);
-    syslog(LOG_NOTICE, jessy3);
-    OPENSSL_free(str);
+     str = X509_NAME_oneline (X509_get_issuer_name(client_cert), 0, 0);
+     CHK_NULL(str);
+     snprintf(jessy3,512,"issuer: %s\n", str);
+     syslog(LOG_NOTICE, jessy3);
+     OPENSSL_free(str);
     
     /* We could do all sorts of certificate verification stuff here before
        deallocating the certificate. */
     
-    X509_free(client_cert);
+     X509_free(client_cert);
   } else{
-    
-    snprintf(cora,512,"Client does not have certificate.\n");
-    syslog(LOG_NOTICE, cora);
+     snprintf(cora,512,"Client does not have certificate.\n");
+     syslog(LOG_NOTICE, cora);
     }
   
         pthread_t sniffer_thread;
