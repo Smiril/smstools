@@ -313,8 +313,12 @@ int main()
         perror("accept failed");
         return 1;
     }
-        sleep (20);
-        //break;
+    SSL_shutdown(ssl);
+    close(client_sock);
+    SSL_free(ssl);
+    SSL_CTX_free(ctx);
+    sleep (20);
+    //break;
     //}
 
     syslog (LOG_NOTICE, "SMS Daemon terminated.");
