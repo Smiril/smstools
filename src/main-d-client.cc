@@ -36,7 +36,7 @@
 
   /* define HOME to be dir for key and cert files... */
 #ifdef __linux__
-#define HOME "/home/github/smstools/src/"
+#define HOME "/home/dv7/github/smstools/src/"
 #elif _WIN32 || _WIN64
 #define HOME "C:\\Users\\github\\smstools\\src\\"
 #else 
@@ -76,23 +76,27 @@ int main(int argc , char *argv[])
     ctx = SSL_CTX_new (meth);                        
     CHK_NULL(ctx);
     /* ----------------------------------------------- */
-    /* Load and use CERTF and KEYF for encrypt the connection */
+    /* Load , Verify and use CERTF and KEYF for encrypt the connection */
     if (!ctx) {
     printf("There's NO Crypto Method choosen\n");
     exit(2);
     }
+    
     if (SSL_CTX_load_verify_locations(ctx,CERTF,HOME) <= 0) {
     printf("Verify of the Cert FAILED!\n");
     exit(3);
     }
+    
     if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
     printf("PEM Cert File is NOT Valid\n");
     exit(4);
     }
+    
     if (SSL_CTX_use_PrivateKey_file(ctx, KEYF, SSL_FILETYPE_PEM) <= 0) {
     printf("PEM CertKey File is NOT Valid\n");
     exit(5);
     }
+    
     if (!SSL_CTX_check_private_key(ctx)) {
     printf("Private key does not match the certificate public key\n");
     exit(6);
