@@ -190,6 +190,7 @@ int main(int argc , char *argv[])
         perror("recv failed");
 	}
     } //while recv end
+    SSL_shutdown(ssl);
     close(sd);
     SSL_free(ssl);
     SSL_CTX_free(ctx);
