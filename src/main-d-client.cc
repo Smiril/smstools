@@ -36,7 +36,7 @@
 
   /* define HOME to be dir for key and cert files... */
 #ifdef __linux__
-#define HOME "/home/dv7/github/smstools/src/"
+#define HOME "/home/github/smstools/src/"
 #elif _WIN32 || _WIN64
 #define HOME "C:\\Users\\github\\smstools\\src\\"
 #else 
