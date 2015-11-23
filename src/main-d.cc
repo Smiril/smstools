@@ -166,39 +166,41 @@ int main()
 {
     skeleton_daemon();
     
-     int client_sock , *new_sock;
+    int client_sock , *new_sock;
 
   /* SSL preliminaries. We keep the certificate and key with the context. */
 
-  SSL_load_error_strings();
-  OpenSSL_add_ssl_algorithms();
-  meth = TLSv1_server_method();
-  ctx = SSL_CTX_new (meth);
-  if (!ctx) {
+    SSL_load_error_strings();
+    OpenSSL_add_ssl_algorithms();
+    meth = TLSv1_server_method();
+    ctx = SSL_CTX_new (meth);
+    CHK_NULL(ctx);
+    /* ----------------------------------------------- */
+    /* Load , Verify and use CERTF and KEYF for encrypt the connection */
+    if (!ctx) {
     syslog (LOG_NOTICE, "There's NO Crypto Method choosen\n");
     exit(2);
-  }
+    }
   
-  if (SSL_CTX_load_verify_locations(ctx,CERTF,HOME) <= 0) {
+    if (SSL_CTX_load_verify_locations(ctx,CERTF,HOME) <= 0) {
     syslog (LOG_NOTICE, "Verify of the Cert FAILED!\n");
     exit(3);
-  }
+    }
   
-  if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
+    if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
     syslog (LOG_NOTICE, "PEM Cert File is NOT Valid\n");
     exit(4);
-  }
+    }
   
-  if (SSL_CTX_use_PrivateKey_file(ctx, KEYF, SSL_FILETYPE_PEM) <= 0) {
+    if (SSL_CTX_use_PrivateKey_file(ctx, KEYF, SSL_FILETYPE_PEM) <= 0) {
     syslog (LOG_NOTICE, "PEM CertKey File is NOT Valid\n");
     exit(5);
-  }
+    }
 
-  if (!SSL_CTX_check_private_key(ctx)) {
+    if (!SSL_CTX_check_private_key(ctx)) {
     syslog (LOG_NOTICE, "Private key does not match the certificate public key\n");
     exit(6);
-  }
-
+    }
   /* ----------------------------------------------- */
   /* Prepare TCP socket for receiving connections */
     //Create socket
