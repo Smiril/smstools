@@ -4,7 +4,7 @@ sudo zypper install at-spi2-atk-common at-spi2-atk-gtk2 glib glib-32bit gtk gtk2
 cd src/
 sh setup.sh
 cd ../
-echo "Make Windows Binary?(only Opensuse 13.2 x64) Do that? [Y,n]"
+echo "Make Windows Binary? Do that? [Y,n]"
 read input
 if [[ $input == "Y" || $input == "y" ]]; then
         echo "doing that ..."
