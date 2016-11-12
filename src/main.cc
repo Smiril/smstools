@@ -1,5 +1,5 @@
 /* 
- * 	Description:	get and read or delete SMS in Incoming Folder 
+ *      Description:    get and read or delete SMS in Incoming Folder 
  */ 
     #include <dirent.h>
     #include <cstdlib>
@@ -19,9 +19,10 @@
     #endif
     }
     int main () {
-	printf("%s\n",Version());
+        printf("%s\n",Version());
         const char *TROZ = "/var/spool/sms/incoming/";;
-        
+        const char *TROZX = "/var/spool/sms/checked/";;
+   
         struct dirent *pDirent;
         DIR *pDir;
        pDir = opendir (TROZ);
@@ -31,8 +32,8 @@
         }
 
         while ((pDirent = readdir(pDir)) != NULL){ 
-	if(pDirent->d_name != core1 && pDirent->d_name != core2)
-	{
+        if(pDirent->d_name != core1 && pDirent->d_name != core2)
+        {
     printf ("\x1B[32m%s\n", pDirent->d_name);
     char START[512];
     snprintf(START,512,"%s%s",TROZ, pDirent->d_name);
@@ -61,14 +62,17 @@
        //DeleteFile(START);
      }
      else {
-      printf("Leave in Inbox ...\n");
+      char STOP[512];
+      snprintf(STOP,512,"%s%s",TROZX, pDirent->d_name);
+      rename (START, STOP);
+      printf("Moved to checked ...\n");
      }
      break;
     } // if end 
-	}
-	else {
-	continue;
-	} // else end 
+        }
+        else {
+        continue;
+        } // else end 
    }
    closedir(pDir);
    return 0;
