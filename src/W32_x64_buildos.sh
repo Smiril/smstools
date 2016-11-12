@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo zypper install mingw32-cross-gcc mingw32-cross-gcc-bootstrap mingw32-runtime
+sudo zypper install mingw32-cross-gcc-c++ mingw32-cross-c++-bootstrap mingw32-runtime
 
 make W32smstools
 make W32smstools-gtk 
