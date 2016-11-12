@@ -35,7 +35,7 @@ CXXFLAGS4 := -lpthread -lpam -lcrypto -lssl -Wall -Wextra -pedantic \
         
 .PHONY: all smstools-deamon smstools3 debug-smstools3 smstools3-gtk debug-smstools3-gtk debug-W32smstools W32smstools x64smstools debug-x64smstools debug-W32smstools-gtk W32smstools-gtk x64smstools-gtk debug-x64smstools-gtk debug-W32getsms x64getsms debug-x64getsms W32getsms getsms debug-getsms install uninstall clean version
 
-all: smstools3 smstools3-gtk getsms smsdeamon 
+all: smstools3 smstools3-gtk getsms 
 smsdeamon: main-d.cc	
 	$(CXX) main-d.cc $(CXXFLAGS4) -o smstools-deamon
 debug-smsdeamon: CXXFLAGS4 += -g -DDEBUG
@@ -92,7 +92,7 @@ version:
 	@echo $(VERSION2)
 	@echo $(VERSION1)
 
-install: getsms smstools3 smstools3-gtk smstools-deamon
+install: getsms smstools3 smstools3-gtk
 	mkdir -p $(PREFIX)
 	cp smstools $(PREFIX)
 	chmod +x $(PREFIX)/smstools
@@ -100,14 +100,11 @@ install: getsms smstools3 smstools3-gtk smstools-deamon
 	chmod +x $(PREFIX)/smstools-gtk
 	cp getsms $(PREFIX)
 	chmod +x $(PREFIX)/getsms
-	cp smstools-deamon $(PREFIX) 
-	chmod +x $(PREFIX)/smstools-deamon
 	
 uninstall: 
 	rm -rf $(PREFIX)/smstools-gtk
 	rm -rf $(PREFIX)/smstools
 	rm -rf $(PREFIX)/getsms
-	rm -rf $(PREFIX)/smstools-deamon
 clean: 
 	rm -rf smstools-deamon
 	rm -rf smstools-gtk
